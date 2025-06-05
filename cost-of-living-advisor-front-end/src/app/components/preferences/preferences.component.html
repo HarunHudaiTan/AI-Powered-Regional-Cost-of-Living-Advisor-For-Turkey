@@ -1,0 +1,248 @@
+<div class="preferences-container">
+  <div class="preferences-card">
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+      </div>
+      <div class="progress-text">Step {{ currentStep }} of {{ totalSteps }}</div>
+    </div>
+
+    <!-- Header -->
+    <div class="preferences-header">
+      <h1 class="preferences-title">{{ getStepTitle() }}</h1>
+      <p class="preferences-subtitle">Help us understand your cost of living preferences</p>
+    </div>
+
+    <form [formGroup]="preferencesForm" (ngSubmit)="onSubmit()" class="preferences-form">
+      <!-- Step 1: Location Information -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="location-section">
+          <h3 class="section-title">Current Location</h3>
+          <div class="form-row" formGroupName="current_location">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input type="text" formControlName="city" class="form-input" placeholder="Enter your current city">
+            </div>
+            <div class="form-group">
+              <label class="form-label">District</label>
+              <input type="text" formControlName="district" class="form-input" placeholder="Enter your current district">
+            </div>
+          </div>
+        </div>
+
+        <div class="location-section">
+          <h3 class="section-title">Target Location</h3>
+          <div class="form-row" formGroupName="target_location">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input type="text" formControlName="city" class="form-input" placeholder="Enter your target city">
+            </div>
+            <div class="form-group">
+              <label class="form-label">District</label>
+              <input type="text" formControlName="district" class="form-input" placeholder="Enter your target district">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Personal Details -->
+      <div class="step-content" *ngIf="currentStep === 2" formGroupName="personal_details">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Age</label>
+            <input type="number" formControlName="age" class="form-input" placeholder="Enter your age" min="18" max="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Family Size</label>
+            <input type="number" formControlName="family_size" class="form-input" placeholder="Number of family members" min="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Net Income (₺)</label>
+          <input type="number" formControlName="monthly_net_income" class="form-input" placeholder="Enter your monthly net income" min="0">
+        </div>
+      </div>
+
+      <!-- Step 3: Housing Expenses -->
+      <div class="step-content" *ngIf="currentStep === 3" formGroupName="current_expenses">
+        <div class="housing-section" formGroupName="housing">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Monthly Rent (₺)</label>
+              <input type="number" formControlName="monthly_rent" class="form-input" placeholder="Monthly rent" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Electricity Bill (₺)</label>
+              <input type="number" formControlName="electricity_bill" class="form-input" placeholder="Monthly electricity" min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Natural Gas Bill (₺)</label>
+              <input type="number" formControlName="natural_gas_bill" class="form-input" placeholder="Monthly gas" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Water Bill (₺)</label>
+              <input type="number" formControlName="water_bill" class="form-input" placeholder="Monthly water" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Internet Bill (₺)</label>
+            <input type="number" formControlName="internet_bill" class="form-input" placeholder="Monthly internet" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Transportation & Education -->
+      <div class="step-content" *ngIf="currentStep === 4" formGroupName="current_expenses">
+        <div class="section-container">
+          <h3 class="section-title">Transportation</h3>
+          <div formGroupName="transportation">
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="uses_public_transportation">
+                <span class="checkmark"></span>
+                I use public transportation
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="is_the_user_student">
+                <span class="checkmark"></span>
+                I am a student
+              </label>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Public Transport Pass (₺)</label>
+                <input type="number" formControlName="public_transport_monthly_pass" class="form-input" placeholder="Monthly pass cost" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Monthly Fuel Cost (₺)</label>
+                <input type="number" formControlName="monthly_fuel_cost" class="form-input" placeholder="Fuel expenses" min="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-container">
+          <h3 class="section-title">Education</h3>
+          <div formGroupName="education">
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="wants_education_analysis">
+                <span class="checkmark"></span>
+                I want education cost analysis
+              </label>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Target University</label>
+                <input type="text" formControlName="target_university" class="form-input" placeholder="University name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Current Tuition per Semester (₺)</label>
+                <input type="number" formControlName="current_tuition_semester" class="form-input" placeholder="Tuition cost" min="0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Other Expenses -->
+      <div class="step-content" *ngIf="currentStep === 5" formGroupName="current_expenses">
+        <div formGroupName="other_expenses">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Gym Membership (₺)</label>
+              <input type="number" formControlName="gym_membership" class="form-input" placeholder="Monthly gym cost" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Entertainment (₺)</label>
+              <input type="number" formControlName="entertainment_monthly" class="form-input" placeholder="Monthly entertainment" min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Clothing (₺)</label>
+              <input type="number" formControlName="clothing_monthly" class="form-input" placeholder="Monthly clothing" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Healthcare (₺)</label>
+              <input type="number" formControlName="healthcare_monthly" class="form-input" placeholder="Monthly healthcare" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: Final Preferences -->
+      <div class="step-content" *ngIf="currentStep === 6">
+        <div class="section-container">
+          <h3 class="section-title">Housing Preferences</h3>
+          <div formGroupName="housing_preferences">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Preferred Housing Type</label>
+                <select formControlName="preferred_housing_type" class="form-select">
+                  <option value="">Select housing type</option>
+                  <option *ngFor="let type of housingTypes" [value]="type">{{ type }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Number of Rooms</label>
+                <select formControlName="number_of_rooms" class="form-select">
+                  <option value="">Select room count</option>
+                  <option *ngFor="let room of roomNumbers" [value]="room">{{ room }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-container">
+          <h3 class="section-title">Vehicle Information</h3>
+          <div formGroupName="vehicle_ownership">
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="owns_vehicle">
+                <span class="checkmark"></span>
+                I own a vehicle
+              </label>
+            </div>
+            <div class="form-row" *ngIf="preferencesForm.get('vehicle_ownership.owns_vehicle')?.value">
+              <div class="form-group">
+                <label class="form-label">Vehicle Type</label>
+                <select formControlName="vehicle_type" class="form-select">
+                  <option value="">Select vehicle type</option>
+                  <option *ngFor="let vehicle of vehicleTypes" [value]="vehicle">{{ vehicle }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fuel Tank Capacity</label>
+                <select formControlName="fuel_tank_capacity" class="form-select">
+                  <option value="">Select capacity</option>
+                  <option *ngFor="let capacity of fuelCapacities" [value]="capacity">{{ capacity }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error and Success Messages -->
+      <div class="message-container">
+        <div class="error-message general-error" *ngIf="error">{{ error }}</div>
+        <div class="success-message" *ngIf="success">{{ success }}</div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="button-container">
+        <button type="button" class="nav-btn prev-btn" (click)="prevStep()" *ngIf="currentStep > 1" [disabled]="loading">Previous</button>
+        <button type="button" class="nav-btn next-btn" (click)="nextStep()" *ngIf="currentStep < totalSteps" [disabled]="!isCurrentStepValid() || loading">Next</button>
+        <button type="submit" class="submit-btn" *ngIf="currentStep === totalSteps" [disabled]="preferencesForm.invalid || loading">
+          <span *ngIf="!loading">Save Preferences</span>
+          <span *ngIf="loading">Saving...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

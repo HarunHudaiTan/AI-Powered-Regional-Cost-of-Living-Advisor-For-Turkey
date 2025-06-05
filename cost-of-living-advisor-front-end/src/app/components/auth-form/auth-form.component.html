@@ -1,0 +1,103 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1 class="auth-title">{{ isLoginMode ? 'Welcome Back' : 'Create Account' }}</h1>
+      <p class="auth-subtitle">
+        {{ isLoginMode ? 'Sign in to your Cost of Living Advisor account' : 'Join us to analyze your cost of living' }}
+      </p>
+    </div>
+
+    <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username" class="form-label">Username</label>
+        <input
+          type="text"
+          id="username"
+          formControlName="username"
+          class="form-input"
+          [class.error]="authForm.get('username')?.invalid && authForm.get('username')?.touched"
+          placeholder="Enter your username"
+        />
+        <div class="error-message" *ngIf="getFieldError('username')">
+          {{ getFieldError('username') }}
+        </div>
+      </div>
+
+      <!-- Email Field (only for signup) -->
+      <div class="form-group" *ngIf="!isLoginMode">
+        <label for="email" class="form-label">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-input"
+          [class.error]="authForm.get('email')?.invalid && authForm.get('email')?.touched"
+          placeholder="Enter your email address"
+        />
+        <div class="error-message" *ngIf="getFieldError('email')">
+          {{ getFieldError('email') }}
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-input"
+          [class.error]="authForm.get('password')?.invalid && authForm.get('password')?.touched"
+          placeholder="Enter your password"
+        />
+        <div class="error-message" *ngIf="getFieldError('password')">
+          {{ getFieldError('password') }}
+        </div>
+      </div>
+
+      <!-- Confirm Password Field (only for signup) -->
+      <div class="form-group" *ngIf="!isLoginMode">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          class="form-input"
+          [class.error]="authForm.get('confirmPassword')?.invalid && authForm.get('confirmPassword')?.touched"
+          placeholder="Confirm your password"
+        />
+        <div class="error-message" *ngIf="getFieldError('confirmPassword')">
+          {{ getFieldError('confirmPassword') }}
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message general-error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="authForm.invalid || loading"
+        [class.loading]="loading"
+      >
+        <span *ngIf="!loading">{{ isLoginMode ? 'Sign In' : 'Create Account' }}</span>
+        <span *ngIf="loading" class="loading-spinner"></span>
+        <span *ngIf="loading">{{ isLoginMode ? 'Signing In...' : 'Creating Account...' }}</span>
+      </button>
+    </form>
+
+    <!-- Switch Mode -->
+    <div class="auth-switch">
+      <p>
+        {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+        <button type="button" class="switch-btn" (click)="switchMode()">
+          {{ isLoginMode ? 'Sign Up' : 'Sign In' }}
+        </button>
+      </p>
+    </div>
+  </div>
+</div>
