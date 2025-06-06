@@ -5,6 +5,17 @@ import json
 
 class FuelPrices():
 
+    def fetch_fuel_prices_sync(self, city):
+        """Synchronous wrapper for fetching fuel prices for a certain Turkish city.
+
+        Args:
+            city: Name of the Turkish city. Must be in lowercase using only English alphabet characters. For example, 'ankara', 'istanbul', 'izmir', "karabuk", "agri". Convert Turkish characters (e.g., 'ğ', 'ş', 'ç', 'ü', 'ı', 'ö') to their English equivalents ('g', 's', 'c', 'u', 'i', 'o').
+
+        Returns:
+            JSON string of fuel prices of the chosen Turkish city.
+        """
+        return asyncio.run(self.fetch_fuel_prices(city))
+
     async def fetch_fuel_prices(self,city):
         """Fetches fuel prices for a certain Turkish city as markdown.
 
@@ -123,6 +134,56 @@ class FuelPrices():
             })
 
         return json.dumps(output, indent=2, ensure_ascii=False)
+
+    def extract_price_for_fuel_type(self, fuel_data, distributor_preference, vehicle_fuel_type):
+        """Extract price for specific distributor and fuel type, fallback to average if not available"""
+        regions = fuel_data.get("regions", [])
+        if not regions:
+            return 0, "no_data"
+        
+        region = regions[0]  # Assuming first region is the main one
+        prices = region.get("prices", [])
+        averages = region.get("averages", {})
+        
+        # If distributor preference is provided, try to find that distributor
+        if distributor_preference:
+            distributor_found = False
+            for price_info in prices:
+                if price_info.get("distributor") == distributor_preference:
+                    distributor_found = True
+                    fuel_price = price_info.get(vehicle_fuel_type)
+                    if fuel_price is not None:
+                        # Convert "47.58 TL" to 47.58
+                        return float(fuel_price.replace(" TL", "")), "distributor_used"
+                    else:
+                        # Distributor found but doesn't have this fuel type
+                        break
+            
+            if not distributor_found:
+                # Distributor not found, use average
+                avg_price = averages.get(vehicle_fuel_type, "0 TL")
+                return float(avg_price.replace(" TL", "")), "distributor_not_found"
+            else:
+                # Distributor found but doesn't have fuel type, use average
+                avg_price = averages.get(vehicle_fuel_type, "0 TL")
+                return float(avg_price.replace(" TL", "")), "fuel_type_not_available"
+        
+        # No distributor preference, use average price
+        avg_price = averages.get(vehicle_fuel_type, "0 TL")
+        return float(avg_price.replace(" TL", "")), "no_preference"
+
+    def get_status_message(self, status, province, distributor, fuel_type):
+        """Create status messages for user feedback"""
+        if status == "distributor_used":
+            return f"Used {distributor} prices for {fuel_type} in {province}"
+        elif status == "distributor_not_found":
+            return f"Distributor '{distributor}' not found in {province}, used average {fuel_type} price"
+        elif status == "fuel_type_not_available":
+            return f"Distributor '{distributor}' doesn't offer {fuel_type} in {province}, used average price"
+        elif status == "no_preference":
+            return f"No distributor preference specified, used average {fuel_type} price in {province}"
+        elif status == "no_data":
+            return f"No fuel price data available for {province}"
 
 
 

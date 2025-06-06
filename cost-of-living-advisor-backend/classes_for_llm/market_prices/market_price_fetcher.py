@@ -2,9 +2,13 @@ import re
 import json
 import os
 import asyncio
-from market_crawl_tool import *
-from market_search_tool import *
+# from market_crawl_tool import *
+# from market_search_tool import *
 import statistics
+
+from classes_for_llm.market_prices.market_crawl_tool import fetchSiteHTML
+from classes_for_llm.market_prices.market_search_tool import search_product
+
 
 class Market_Price_Fetcher():
 
@@ -14,6 +18,11 @@ class Market_Price_Fetcher():
         self.status = "IDLE"
 
     def remove_outliers(self,values):
+        # If we have fewer than 2 data points, we can't calculate quartiles
+        # Just return the original values
+        if len(values) < 2:
+            return values
+            
         values_sorted = sorted(values)
         q1 = statistics.quantiles(values_sorted, n=4)[0]
         q3 = statistics.quantiles(values_sorted, n=4)[2]
@@ -178,11 +187,69 @@ class Market_Price_Fetcher():
         self.status = "IDLE"
         return prices
 
+    def calculateTotalPrice(self, shopping_list_results):
+        """
+        Calculate the total price from processShoppingList results.
+        
+        Args:
+            shopping_list_results: List of dictionaries from processShoppingList method
+            
+        Returns:
+            float: Total price of all products
+        """
+        total_price = 0.0
+        
+        for product in shopping_list_results:
+            avg_price = product.get("avarage_price", 0)
+            if isinstance(avg_price, (int, float)) and avg_price > 0:
+                total_price += avg_price
+                
+        return round(total_price, 2)
+
+    def processShoppingListSync(self, shopping_list):
+        """
+        Synchronous wrapper for processShoppingList async method.
+        
+        Args:
+            shopping_list: List of product names to process
+            
+        Returns:
+            List of dictionaries with product price information
+        """
+        return asyncio.run(self.processShoppingList(shopping_list))
+
+    # def calculateTotalUnitPrice(self, shopping_list_results):
+    #     """
+    #     Calculate the total average unit price from processShoppingList results.
+    #
+    #     Args:
+    #         shopping_list_results: List of dictionaries from processShoppingList method
+    #
+    #     Returns:
+    #         float: Total average unit price of all products
+    #     """
+    #     total_unit_price = 0.0
+    #
+    #     for product in shopping_list_results:
+    #         avg_unit_price = product.get("avarage_unit_price", 0)
+    #         if isinstance(avg_unit_price, (int, float)) and avg_unit_price > 0:
+    #             total_unit_price += avg_unit_price
+    #
+    #     return round(total_unit_price, 2)
+
 # Example usage
 async def main():
     fetcher = Market_Price_Fetcher()
-    result = await fetcher.processShoppingList(["Şampuan","Kırmızı et","Bir litre süt","Ekmek", "Yumurta", "Elma", "Süt"])
+    result = await fetcher.processShoppingList(["Şampuan","Kırmızı et","Bir litre süt","Ekmek", "Yumurta", "Elma"])
     print(json.dumps(result, indent=4, ensure_ascii=False))
+    
+    # Calculate total price
+    total_price = fetcher.calculateTotalPrice(result)
+    print(f"\nTotal Price: {total_price} TL")
+    
+    # Calculate total unit price
+    # total_unit_price = fetcher.calculateTotalUnitPrice(result)
+    # print(f"Total Unit Price: {total_unit_price} TL")
 
 if __name__ == "__main__":
     asyncio.run(main())

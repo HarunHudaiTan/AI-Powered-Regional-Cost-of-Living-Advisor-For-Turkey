@@ -15,12 +15,15 @@ export class PreferencesComponent implements OnInit {
   success = '';
   currentStep = 1;
   totalSteps = 6;
+  isEditMode = false;
 
   // Options for dropdowns
   housingTypes = ['Apartment', 'House', 'Studio', 'Shared Room'];
   roomNumbers = ['1', '1+1', '2+1', '3+1', '4+1', '5+'];
   vehicleTypes = ['Car', 'Motorcycle', 'Bicycle'];
   fuelCapacities = ['30-40L', '40-50L', '50-60L', '60L+'];
+  fuelTypes = ['Gasoline', 'Diesel', 'LPG', 'Electric', 'Hybrid'];
+  distributorPreferences = ['Shell', 'BP', 'Petrol Ofisi', 'Opet', 'Total', 'No Preference'];
 
   constructor(
     private fb: FormBuilder,
@@ -35,6 +38,9 @@ export class PreferencesComponent implements OnInit {
     this.authService.isAuthenticated().subscribe(isAuth => {
       if (!isAuth) {
         this.router.navigate(['/auth']);
+      } else {
+        // Try to load existing preferences
+        this.loadExistingPreferences();
       }
     });
   }
@@ -73,7 +79,6 @@ export class PreferencesComponent implements OnInit {
           uses_public_transportation: [false],
           is_the_user_student: [false],
           public_transport_monthly_pass: [0],
-          monthly_fuel_cost: [0],
           parking_fees: [0]
         }),
         education: this.fb.group({
@@ -102,7 +107,9 @@ export class PreferencesComponent implements OnInit {
         owns_vehicle: [false],
         vehicle_type: [''],
         fuel_tank_capacity: [''],
-        fuel_tank_monthly_fill_count: [0]
+        fuel_tank_monthly_fill_count: [0],
+        distributor_preference: [''],
+        vehicle_fuel_type: ['']
       }),
       shopping_preferences: this.fb.group({
         grocery_list: this.fb.array([])
@@ -117,7 +124,7 @@ export class PreferencesComponent implements OnInit {
   addGroceryItem(): void {
     const item = this.fb.group({
       item_name: ['', Validators.required],
-      quantity_per_month: [1, [Validators.required, Validators.min(1)]],
+      // quantity_per_month: [1, [Validators.required, Validators.min(1)]], // Commented out - may use later
       preferred_brand: ['']
     });
     this.groceryList.push(item);
@@ -159,6 +166,43 @@ export class PreferencesComponent implements OnInit {
     }
   }
 
+  loadExistingPreferences(): void {
+    this.authService.getPreferences().subscribe({
+      next: (response) => {
+        if (response && response.user_profile) {
+          this.isEditMode = true;
+          this.populateForm(response.user_profile);
+        }
+      },
+      error: (error) => {
+        // If no preferences found (404), that's ok - user will create new ones
+        if (error.status !== 404) {
+          console.error('Error loading preferences:', error);
+        }
+      }
+    });
+  }
+
+  populateForm(userProfile: any): void {
+    // Populate the form with existing data
+    this.preferencesForm.patchValue(userProfile);
+    
+    // Handle grocery list separately since it's a FormArray
+    if (userProfile.shopping_preferences?.grocery_list) {
+      const groceryArray = this.preferencesForm.get('shopping_preferences.grocery_list') as FormArray;
+      groceryArray.clear();
+      
+      userProfile.shopping_preferences.grocery_list.forEach((item: any) => {
+        const groceryItem = this.fb.group({
+          item_name: [item.item_name || '', Validators.required],
+          // quantity_per_month: [item.quantity_per_month || 1, [Validators.required, Validators.min(1)]], // Commented out - may use later
+          preferred_brand: [item.preferred_brand || '']
+        });
+        groceryArray.push(groceryItem);
+      });
+    }
+  }
+
   onSubmit(): void {
     if (this.preferencesForm.invalid) {
       this.error = 'Please fill in all required fields correctly.';
@@ -172,10 +216,16 @@ export class PreferencesComponent implements OnInit {
       user_profile: this.preferencesForm.value
     };
 
-    this.authService.createPreferences(formData).subscribe({
+    const saveOperation = this.isEditMode 
+      ? this.authService.updatePreferences(formData)
+      : this.authService.createPreferences(formData);
+
+    saveOperation.subscribe({
       next: (response) => {
         this.loading = false;
-        this.success = 'Preferences saved successfully!';
+        this.success = this.isEditMode 
+          ? 'Preferences updated successfully!' 
+          : 'Preferences saved successfully!';
         setTimeout(() => {
           // Navigate to dashboard or main app
           this.router.navigate(['/dashboard']);
@@ -183,7 +233,7 @@ export class PreferencesComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.error = error.error?.msg || 'Failed to save preferences. Please try again.';
+        this.error = error.error?.msg || `Failed to ${this.isEditMode ? 'update' : 'save'} preferences. Please try again.`;
       }
     });
   }

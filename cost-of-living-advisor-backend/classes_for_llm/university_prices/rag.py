@@ -280,6 +280,7 @@ def rag_Response(university_name,department):
     chroma_collection=get_existing_chroma_collection("UniPrices")
     rag_query = department + "Ücretleri"
     retrieved_documents = retrieveDocs(chroma_collection, rag_query, university_name_camel_case, 10,return_only_docs=True)
-    print("Education Rag response"+show_results(retrieved_documents, return_only_docs=True))
+    print("Education Rag response")
+    print(show_results(retrieved_documents, return_only_docs=True))
     return show_results(retrieved_documents, return_only_docs=True)
 

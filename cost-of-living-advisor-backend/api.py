@@ -8,6 +8,9 @@ import os
 import mysql.connector
 from mysql.connector import Error
 
+from classes_for_llm.Root import RootLLM
+from classes_for_llm.UserPreferencesManager import UserPreferencesManager
+
 app = Flask(__name__)
 
 app.config[
@@ -113,11 +116,11 @@ class UserPreferences(db.Model):
     uses_public_transportation = db.Column(db.Boolean, default=False)
     is_the_user_student = db.Column(db.Boolean, default=False)
     public_transport_monthly_pass = db.Column(db.Float, nullable=True)
-    parking_fees = db.Column(db.Float, nullable=True)
 
     # Education
     wants_education_analysis = db.Column(db.Boolean, default=False)
     target_university = db.Column(db.String(200), nullable=True)
+    department_name = db.Column(db.String(200), nullable=True)
     current_tuition_semester = db.Column(db.Float, nullable=True)
 
     # Other Expenses
@@ -135,11 +138,13 @@ class UserPreferences(db.Model):
     # Vehicle Information
     owns_vehicle = db.Column(db.Boolean, default=False)
     vehicle_type = db.Column(db.String(50), nullable=True)
-    fuel_tank_capacity = db.Column(db.String(20), nullable=True)
+    fuel_tank_capacity = db.Column(db.Integer, nullable=True)
     fuel_tank_monthly_fill_count = db.Column(db.Integer, nullable=True)
+    distributor_preference = db.Column(db.String(100), nullable=True)
+    vehicle_fuel_type = db.Column(db.String(50), nullable=True)
 
     # Shopping Preferences
-    grocery_preferences = db.Column(db.JSON, nullable=True)  # Store the structured grocery preferences as JSON
+    grocery_preferences = db.Column(db.JSON, nullable=True)  # Store the grocery list as a simple array
 
 
 # Function to initialize database tables
@@ -172,6 +177,7 @@ def handle_preflight():
 @app.route('/api/signup', methods=['POST'])
 def signup():
     data = request.get_json()
+
 
     if User.query.filter_by(username=data['username']).first() or User.query.filter_by(email=data['email']).first():
         return jsonify({"msg": "Username or email already exists"}), 409
@@ -208,13 +214,13 @@ def profile():
         "email": user.email
     }), 200
 
-
+# user_preferences_manager2=UserPreferencesManager()
 @app.route('/api/preferences', methods=['POST'])
 @jwt_required()
 def create_preferences():
     current_user_id = int(get_jwt_identity())
     data = request.get_json()
-
+    # print(user_preferences_manager2.get_user_preferences_by_id(current_user_id))
     # Check if preferences already exist
     existing_preferences = UserPreferences.query.filter_by(user_id=current_user_id).first()
     if existing_preferences:
@@ -244,11 +250,11 @@ def create_preferences():
             is_the_user_student=data['user_profile']['current_expenses']['transportation']['is_the_user_student'],
             public_transport_monthly_pass=data['user_profile']['current_expenses']['transportation'][
                 'public_transport_monthly_pass'],
-            parking_fees=data['user_profile']['current_expenses']['transportation'].get('parking_fees'),
 
             # Education
             wants_education_analysis=data['user_profile']['current_expenses']['education']['wants_education_analysis'],
             target_university=data['user_profile']['current_expenses']['education'].get('target_university'),
+            department_name=data['user_profile']['current_expenses']['education'].get('department_name'),
             current_tuition_semester=data['user_profile']['current_expenses']['education']['current_tuition_semester'],
 
             # Other expenses
@@ -268,9 +274,11 @@ def create_preferences():
 
             # Vehicle information
             owns_vehicle=data['user_profile']['vehicle_ownership']['owns_vehicle'],
-            vehicle_type=data['user_profile']['vehicle_ownership']['vehicle_type'],
-            fuel_tank_capacity=data['user_profile']['vehicle_ownership']['fuel_tank_capacity'],
-            fuel_tank_monthly_fill_count=data['user_profile']['vehicle_ownership']['fuel_tank_monthly_fill_count'],
+            vehicle_type=data['user_profile']['vehicle_ownership'].get('vehicle_type'),
+            fuel_tank_capacity=data['user_profile']['vehicle_ownership'].get('fuel_tank_capacity'),
+            fuel_tank_monthly_fill_count=data['user_profile']['vehicle_ownership'].get('fuel_tank_monthly_fill_count'),
+            distributor_preference=data['user_profile']['vehicle_ownership'].get('distributor_preference'),
+            vehicle_fuel_type=data['user_profile']['vehicle_ownership'].get('vehicle_fuel_type'),
 
             # Shopping preferences
             grocery_preferences=data['user_profile']['shopping_preferences']['grocery_list']
@@ -286,12 +294,17 @@ def create_preferences():
         return jsonify({"msg": f"Error creating preferences: {str(e)}"}), 500
 
 
+# user_preferences = UserPreferencesManager()
 @app.route('/api/preferences', methods=['GET'])
 @jwt_required()
 def get_preferences():
     current_user_id = get_jwt_identity()
     preferences = UserPreferences.query.filter_by(user_id=current_user_id).first()
-
+    print(current_user_id)
+    # user_profile=user_preferences.get_user_preferences_by_id(current_user_id)
+    # print(user_profile)
+    # print("ahdadlksjljasdadslkjsajkdsa")
+    # print(user_profile["user_profile"]["target_location"]["city"])
     if not preferences:
         return jsonify({"msg": "No preferences found"}), 404
 
@@ -328,16 +341,12 @@ def get_preferences():
                 "transportation": {
                     "uses_public_transportation": preferences.uses_public_transportation,
                     "is_the_user_student": preferences.is_the_user_student,
-                    "public_transport_monthly_pass": preferences.public_transport_monthly_pass,
-                    "parking_fees": preferences.parking_fees,
-                    "total_monthly_transport": sum([
-                        preferences.public_transport_monthly_pass or 0,
-                        preferences.parking_fees or 0
-                    ])
+                    "public_transport_monthly_pass": preferences.public_transport_monthly_pass
                 },
                 "education": {
                     "wants_education_analysis": preferences.wants_education_analysis,
                     "target_university": preferences.target_university,
+                    "department_name": preferences.department_name,
                     "current_tuition_semester": preferences.current_tuition_semester,
                     "total_monthly_education": preferences.current_tuition_semester or 0
                 },
@@ -366,7 +375,9 @@ def get_preferences():
                 "owns_vehicle": preferences.owns_vehicle,
                 "vehicle_type": preferences.vehicle_type,
                 "fuel_tank_capacity": preferences.fuel_tank_capacity,
-                "fuel_tank_monthly_fill_count": preferences.fuel_tank_monthly_fill_count
+                "fuel_tank_monthly_fill_count": preferences.fuel_tank_monthly_fill_count,
+                "distributor_preference": preferences.distributor_preference,
+                "vehicle_fuel_type": preferences.vehicle_fuel_type
             },
             "shopping_preferences": {
                 "grocery_list": preferences.grocery_preferences
@@ -374,6 +385,137 @@ def get_preferences():
         }
     }), 200
 
+user_preferences_manager=UserPreferencesManager()
+root=RootLLM()
+@app.route('/api/generate_root_llm_response', methods=['GET'])
+@jwt_required()
+def generate_root_llm_response():
+    current_user_id = get_jwt_identity()
+    preferences = UserPreferences.query.filter_by(user_id=current_user_id).first()
+    print(current_user_id)
+    
+    if not preferences:
+        return jsonify({"msg": "No preferences found"}), 404
+    
+    # Structure the user data the same way as get_preferences
+    user_data = {
+        "user_profile": {
+            "current_location": {
+                "city": preferences.current_city,
+                "district": preferences.current_district
+            },
+            "target_location": {
+                "city": preferences.target_city,
+                "district": preferences.target_district
+            },
+            "personal_details": {
+                "age": preferences.age,
+                "family_size": preferences.family_size,
+                "monthly_net_income": preferences.monthly_net_income
+            },
+            "current_expenses": {
+                "housing": {
+                    "monthly_rent": preferences.monthly_rent,
+                    "electricity_bill": preferences.electricity_bill,
+                    "natural_gas_bill": preferences.natural_gas_bill,
+                    "water_bill": preferences.water_bill,
+                    "internet_bill": preferences.internet_bill,
+                    "total_monthly_housing": sum([
+                        preferences.monthly_rent,
+                        preferences.electricity_bill,
+                        preferences.natural_gas_bill,
+                        preferences.water_bill,
+                        preferences.internet_bill
+                    ])
+                },
+                "transportation": {
+                    "uses_public_transportation": preferences.uses_public_transportation,
+                    "is_the_user_student": preferences.is_the_user_student,
+                    "public_transport_monthly_pass": preferences.public_transport_monthly_pass
+                },
+                "education": {
+                    "wants_education_analysis": preferences.wants_education_analysis,
+                    "target_university": preferences.target_university,
+                    "department_name": preferences.department_name,
+                    "current_tuition_semester": preferences.current_tuition_semester,
+                    "total_monthly_education": preferences.current_tuition_semester or 0
+                },
+                "other_expenses": {
+                    "gym_membership": preferences.gym_membership,
+                    "entertainment_monthly": preferences.entertainment_monthly,
+                    "clothing_monthly": preferences.clothing_monthly,
+                    "healthcare_monthly": preferences.healthcare_monthly,
+                    "subscriptions_monthly": preferences.subscriptions_monthly,
+                    "travel_vacation_monthly": preferences.travel_vacation_monthly,
+                    "total_monthly_other": sum([
+                        preferences.gym_membership or 0,
+                        preferences.entertainment_monthly or 0,
+                        preferences.clothing_monthly or 0,
+                        preferences.healthcare_monthly or 0,
+                        preferences.subscriptions_monthly or 0,
+                        preferences.travel_vacation_monthly or 0
+                    ])
+                }
+            },
+            "housing_preferences": {
+                "preferred_housing_type": preferences.preferred_housing_type,
+                "number_of_rooms": preferences.number_of_rooms
+            },
+            "vehicle_ownership": {
+                "owns_vehicle": preferences.owns_vehicle,
+                "vehicle_type": preferences.vehicle_type,
+                "fuel_tank_capacity": preferences.fuel_tank_capacity,
+                "fuel_tank_monthly_fill_count": preferences.fuel_tank_monthly_fill_count,
+                "distributor_preference": preferences.distributor_preference,
+                "vehicle_fuel_type": preferences.vehicle_fuel_type
+            },
+            "shopping_preferences": {
+                "grocery_list": preferences.grocery_preferences
+            }
+        }
+    }
+    
+    province = user_data["user_profile"]["target_location"]["city"]
+    district = user_data["user_profile"]["target_location"]["district"]
+    room_filter = user_data["user_profile"]["housing_preferences"]["number_of_rooms"]
+    real_estate_results = root.get_real_estate_price_results(province, district, room_filter)
+
+    # Initialize variables with default values
+    education_results = None
+    fuel_results = None
+    transportation_results = None
+    
+    # Education Price Analysis (only if wanted)
+    if user_data["user_profile"]["current_expenses"]["education"]["wants_education_analysis"]:
+        university_name = user_data["user_profile"]["current_expenses"]["education"]["target_university"]
+        department_name = user_data["user_profile"]["current_expenses"]["education"]["department_name"]
+        education_results = root.get_education_price_reults(university_name, department_name)
+
+    # Fuel Price Analysis (only if owns vehicle)
+    if user_data["user_profile"]["vehicle_ownership"]["owns_vehicle"]:
+        owns_vehicle = user_data["user_profile"]["vehicle_ownership"]["owns_vehicle"]
+        current_province = user_data["user_profile"]["current_location"]["city"]
+        target_province = user_data["user_profile"]["target_location"]["city"]
+        fuel_tank_capacity = user_data["user_profile"]["vehicle_ownership"]["fuel_tank_capacity"]
+        fuel_tank_monthly_fill_count = user_data["user_profile"]["vehicle_ownership"]["fuel_tank_monthly_fill_count"]
+        distributor_preference = user_data["user_profile"]["vehicle_ownership"]["distributor_preference"]
+        vehicle_fuel_type = user_data["user_profile"]["vehicle_ownership"]["vehicle_fuel_type"]
+        fuel_results = root.get_fuel_price_results(owns_vehicle, current_province, target_province, fuel_tank_capacity,
+                                                   fuel_tank_monthly_fill_count, distributor_preference,
+                                                   vehicle_fuel_type)
+
+    # Transportation Price Analysis (only if uses public transportation)
+    if user_data["user_profile"]["current_expenses"]["transportation"]["uses_public_transportation"]:
+        province = user_data["user_profile"]["target_location"]["city"]
+        uses_public_transportation = user_data["user_profile"]["current_expenses"]["transportation"][
+            "uses_public_transportation"]
+        transportation_results = root.get_transportation_price_results(province, uses_public_transportation)
+
+    # Market Price Analysis - Use grocery list directly as simple array
+    grocery_items = user_data["user_profile"]["shopping_preferences"]["grocery_list"] or []
+
+    market_results = root.get_market_price_results(grocery_items)
+    return root.generate_root_llm_response(user_data, real_estate_results, education_results, fuel_results, transportation_results, market_results)
 
 @app.route('/api/preferences', methods=['PUT'])
 @jwt_required()
@@ -409,12 +551,12 @@ def update_preferences():
             'is_the_user_student']
         preferences.public_transport_monthly_pass = data['user_profile']['current_expenses']['transportation'][
             'public_transport_monthly_pass']
-        preferences.parking_fees = data['user_profile']['current_expenses']['transportation'].get('parking_fees')
 
         # Education
         preferences.wants_education_analysis = data['user_profile']['current_expenses']['education'][
             'wants_education_analysis']
         preferences.target_university = data['user_profile']['current_expenses']['education'].get('target_university')
+        preferences.department_name = data['user_profile']['current_expenses']['education'].get('department_name')
         preferences.current_tuition_semester = data['user_profile']['current_expenses']['education'][
             'current_tuition_semester']
 
@@ -437,10 +579,12 @@ def update_preferences():
 
         # Vehicle information
         preferences.owns_vehicle = data['user_profile']['vehicle_ownership']['owns_vehicle']
-        preferences.vehicle_type = data['user_profile']['vehicle_ownership']['vehicle_type']
-        preferences.fuel_tank_capacity = data['user_profile']['vehicle_ownership']['fuel_tank_capacity']
-        preferences.fuel_tank_monthly_fill_count = data['user_profile']['vehicle_ownership'][
-            'fuel_tank_monthly_fill_count']
+        preferences.vehicle_type = data['user_profile']['vehicle_ownership'].get('vehicle_type')
+        preferences.fuel_tank_capacity = data['user_profile']['vehicle_ownership'].get('fuel_tank_capacity')
+        preferences.fuel_tank_monthly_fill_count = data['user_profile']['vehicle_ownership'].get(
+            'fuel_tank_monthly_fill_count')
+        preferences.distributor_preference = data['user_profile']['vehicle_ownership'].get('distributor_preference')
+        preferences.vehicle_fuel_type = data['user_profile']['vehicle_ownership'].get('vehicle_fuel_type')
 
         # Shopping preferences
         preferences.grocery_preferences = data['user_profile']['shopping_preferences']['grocery_list']
