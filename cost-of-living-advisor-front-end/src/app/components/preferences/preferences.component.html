@@ -113,15 +113,9 @@
                 I am a student
               </label>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Public Transport Pass (₺)</label>
-                <input type="number" formControlName="public_transport_monthly_pass" class="form-input" placeholder="Monthly pass cost" min="0">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Parking Fees (₺)</label>
-                <input type="number" formControlName="parking_fees" class="form-input" placeholder="Monthly parking fees" min="0">
-              </div>
+            <div class="form-group">
+              <label class="form-label">Public Transport Pass (₺)</label>
+              <input type="number" formControlName="public_transport_monthly_pass" class="form-input" placeholder="Monthly pass cost" min="0">
             </div>
           </div>
         </div>
@@ -142,9 +136,13 @@
                 <input type="text" formControlName="target_university" class="form-input" placeholder="University name">
               </div>
               <div class="form-group">
-                <label class="form-label">Current Tuition per Semester (₺)</label>
-                <input type="number" formControlName="current_tuition_semester" class="form-input" placeholder="Tuition cost" min="0">
+                <label class="form-label">Department Name</label>
+                <input type="text" formControlName="department_name" class="form-input" placeholder="Department/Program name">
               </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Current Tuition per Semester (₺)</label>
+              <input type="number" formControlName="current_tuition_semester" class="form-input" placeholder="Tuition cost" min="0">
             </div>
           </div>
         </div>
@@ -230,10 +228,10 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Fuel Tank Capacity</label>
+                  <label class="form-label">Fuel Tank Capacity (Liters)</label>
                   <select formControlName="fuel_tank_capacity" class="form-select">
                     <option value="">Select capacity</option>
-                    <option *ngFor="let capacity of fuelCapacities" [value]="capacity">{{ capacity }}</option>
+                    <option *ngFor="let capacity of fuelCapacities" [value]="capacity">{{ capacity }}L</option>
                   </select>
                 </div>
               </div>
@@ -270,20 +268,14 @@
                 <button type="button" class="add-btn" (click)="addGroceryItem()">Add Item</button>
               </div>
               <div class="grocery-items" formArrayName="grocery_list">
-                                 <div class="grocery-item" *ngFor="let item of groceryList.controls; let i = index" [formGroupName]="i">
-                   <div class="grocery-item-content">
-                     <div class="form-group">
-                       <input type="text" formControlName="item_name" class="form-input" placeholder="Item name">
-                     </div>
-                     <!-- <div class="form-group">
-                       <input type="number" formControlName="quantity_per_month" class="form-input" placeholder="Quantity/month" min="1">
-                     </div> -->
-                     <div class="form-group">
-                       <input type="text" formControlName="preferred_brand" class="form-input" placeholder="Preferred brand (optional)">
-                     </div>
-                     <button type="button" class="remove-btn" (click)="removeGroceryItem(i)">×</button>
-                   </div>
-                 </div>
+                <div class="grocery-item" *ngFor="let item of groceryList.controls; let i = index">
+                  <div class="grocery-item-content">
+                    <div class="form-group">
+                      <input type="text" [formControlName]="i" class="form-input" placeholder="Item name">
+                    </div>
+                    <button type="button" class="remove-btn" (click)="removeGroceryItem(i)">×</button>
+                  </div>
+                </div>
                 <div class="empty-grocery" *ngIf="groceryList.length === 0">
                   <p>No grocery items added. Click "Add Item" to start building your grocery list.</p>
                 </div>

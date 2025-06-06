@@ -15,8 +15,8 @@ export class DashboardComponent {
   ) {}
 
   viewAnalysis(): void {
-    // Navigate to analysis page (to be implemented)
-    alert('Analysis feature coming soon!');
+    console.log('viewAnalysis called - navigating to /analysis');
+    this.router.navigate(['/analysis']);
   }
 
   editPreferences(): void {

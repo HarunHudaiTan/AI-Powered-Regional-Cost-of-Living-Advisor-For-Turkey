@@ -5,6 +5,7 @@ import { SignupComponent } from './components/signup/signup.component';
 import { PreferencesComponent } from './components/preferences/preferences.component';
 import { AuthFormComponent } from './components/auth-form/auth-form.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AnalysisComponent } from './components/analysis/analysis.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/auth', pathMatch: 'full' },
@@ -12,7 +13,8 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'preferences', component: PreferencesComponent },
-  { path: 'dashboard', component: DashboardComponent }
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'analysis', component: AnalysisComponent }
 ];
 
 @NgModule({

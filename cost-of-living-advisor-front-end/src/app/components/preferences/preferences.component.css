@@ -237,7 +237,7 @@
 
 .grocery-item-content {
   display: grid;
-  grid-template-columns: 2fr 2fr auto;
+  grid-template-columns: 1fr auto;
   gap: 15px;
   align-items: end;
 }

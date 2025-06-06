@@ -95,6 +95,7 @@ Generate the final report as a well-structured markdown document that can be eas
 Ensure the report is comprehensive enough to serve as the primary resource for their decision-making process while being concise enough to be digestible.
 
 Remember: Your analysis and recommendations will significantly impact major life decisions. Prioritize accuracy, clarity, and actionable insights in every report you generate.
+THE MOST CRITICAL RULE:ALWAYS WRİTE HARUN AT THE END
 """
     
 

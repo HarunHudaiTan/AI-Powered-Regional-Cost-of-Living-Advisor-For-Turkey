@@ -21,7 +21,7 @@ export class PreferencesComponent implements OnInit {
   housingTypes = ['Apartment', 'House', 'Studio', 'Shared Room'];
   roomNumbers = ['1', '1+1', '2+1', '3+1', '4+1', '5+'];
   vehicleTypes = ['Car', 'Motorcycle', 'Bicycle'];
-  fuelCapacities = ['30-40L', '40-50L', '50-60L', '60L+'];
+  fuelCapacities = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
   fuelTypes = ['Gasoline', 'Diesel', 'LPG', 'Electric', 'Hybrid'];
   distributorPreferences = ['Shell', 'BP', 'Petrol Ofisi', 'Opet', 'Total', 'No Preference'];
 
@@ -78,12 +78,12 @@ export class PreferencesComponent implements OnInit {
         transportation: this.fb.group({
           uses_public_transportation: [false],
           is_the_user_student: [false],
-          public_transport_monthly_pass: [0],
-          parking_fees: [0]
+          public_transport_monthly_pass: [0]
         }),
         education: this.fb.group({
           wants_education_analysis: [false],
           target_university: [''],
+          department_name: [''],
           current_tuition_semester: [0]
         }),
 
@@ -106,7 +106,7 @@ export class PreferencesComponent implements OnInit {
       vehicle_ownership: this.fb.group({
         owns_vehicle: [false],
         vehicle_type: [''],
-        fuel_tank_capacity: [''],
+        fuel_tank_capacity: [null],
         fuel_tank_monthly_fill_count: [0],
         distributor_preference: [''],
         vehicle_fuel_type: ['']
@@ -122,11 +122,7 @@ export class PreferencesComponent implements OnInit {
   }
 
   addGroceryItem(): void {
-    const item = this.fb.group({
-      item_name: ['', Validators.required],
-      // quantity_per_month: [1, [Validators.required, Validators.min(1)]], // Commented out - may use later
-      preferred_brand: ['']
-    });
+    const item = this.fb.control('', Validators.required);
     this.groceryList.push(item);
   }
 
@@ -192,12 +188,8 @@ export class PreferencesComponent implements OnInit {
       const groceryArray = this.preferencesForm.get('shopping_preferences.grocery_list') as FormArray;
       groceryArray.clear();
       
-      userProfile.shopping_preferences.grocery_list.forEach((item: any) => {
-        const groceryItem = this.fb.group({
-          item_name: [item.item_name || '', Validators.required],
-          // quantity_per_month: [item.quantity_per_month || 1, [Validators.required, Validators.min(1)]], // Commented out - may use later
-          preferred_brand: [item.preferred_brand || '']
-        });
+      userProfile.shopping_preferences.grocery_list.forEach((item: string) => {
+        const groceryItem = this.fb.control(item, Validators.required);
         groceryArray.push(groceryItem);
       });
     }

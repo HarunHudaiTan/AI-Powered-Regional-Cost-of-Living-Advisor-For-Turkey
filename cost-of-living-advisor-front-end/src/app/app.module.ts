@@ -10,6 +10,7 @@ import { SignupComponent } from './components/signup/signup.component';
 import { PreferencesComponent } from './components/preferences/preferences.component';
 import { AuthFormComponent } from './components/auth-form/auth-form.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AnalysisComponent } from './components/analysis/analysis.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
     SignupComponent,
     PreferencesComponent,
     AuthFormComponent,
-    DashboardComponent
+    DashboardComponent,
+    AnalysisComponent
   ],
   imports: [
     BrowserModule,

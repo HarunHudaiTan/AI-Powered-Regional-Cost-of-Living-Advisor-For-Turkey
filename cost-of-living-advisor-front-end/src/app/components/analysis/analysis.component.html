@@ -1,0 +1,70 @@
+<div class="analysis-container">
+  <!-- Header -->
+  <div class="analysis-header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="back-icon">←</span>
+      Back to Dashboard
+    </button>
+    <h1 class="analysis-title">Cost of Living Analysis Report</h1>
+    <div class="action-buttons">
+      <button class="btn secondary" (click)="refreshAnalysis()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">🔄 Refresh</span>
+        <span *ngIf="isLoading">Loading...</span>
+      </button>
+      <button class="btn secondary" (click)="previewPdf()" [disabled]="isLoading || !markdownContent">
+        <span *ngIf="!isLoading">👁️ Preview PDF</span>
+        <span *ngIf="isLoading">Processing...</span>
+      </button>
+      <button class="btn primary" (click)="downloadPdf()" [disabled]="isLoading || !markdownContent">
+        <span *ngIf="!isLoading">📥 Download PDF</span>
+        <span *ngIf="isLoading">Processing...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading && !markdownContent">
+    <div class="spinner"></div>
+    <p class="loading-text">Generating your personalized cost of living analysis...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button class="btn secondary" (click)="refreshAnalysis()">Try Again</button>
+  </div>
+
+  <!-- Content Display -->
+  <div class="content-container" *ngIf="htmlContent && !isLoading">
+    <div class="content-card">
+      <div class="markdown-content" [innerHTML]="htmlContent"></div>
+    </div>
+  </div>
+
+  <!-- PDF Preview Modal -->
+  <div class="modal-overlay" *ngIf="showPdfPreview" (click)="closePdfPreview()">
+    <div class="pdf-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>PDF Preview</h3>
+        <button class="close-btn" (click)="closePdfPreview()">×</button>
+      </div>
+      <div class="modal-content">
+        <iframe 
+          *ngIf="pdfBlobUrl" 
+          [src]="pdfBlobUrl" 
+          class="pdf-iframe"
+          frameborder="0">
+        </iframe>
+        <div class="pdf-loading" *ngIf="!pdfBlobUrl">
+          <div class="spinner"></div>
+          <p>Generating PDF preview...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" (click)="closePdfPreview()">Close</button>
+        <button class="btn primary" (click)="downloadPdf()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
