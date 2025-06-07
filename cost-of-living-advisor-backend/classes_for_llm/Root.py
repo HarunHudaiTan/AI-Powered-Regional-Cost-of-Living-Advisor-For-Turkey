@@ -5,6 +5,7 @@ from classes_for_llm.market_prices.market_price_fetcher import Market_Price_Fetc
 from classes_for_llm.proj_llm_agent import LLM_Agent
 from classes_for_llm.real_estate_and_utility_prices.Search import Search
 from classes_for_llm.real_estate_and_utility_prices.real_estate_parse import RealEstate
+from classes_for_llm.real_estate_and_utility_prices.utility_prices import UtilitiesPrices
 from classes_for_llm.university_prices.EducationAgent import EducationAgent
 
 import json
@@ -95,7 +96,7 @@ Generate the final report as a well-structured markdown document that can be eas
 Ensure the report is comprehensive enough to serve as the primary resource for their decision-making process while being concise enough to be digestible.
 
 Remember: Your analysis and recommendations will significantly impact major life decisions. Prioritize accuracy, clarity, and actionable insights in every report you generate.
-THE MOST CRITICAL RULE:ALWAYS WRİTE HARUN AT THE END
+
 """
     
 
@@ -108,7 +109,10 @@ THE MOST CRITICAL RULE:ALWAYS WRİTE HARUN AT THE END
         parsed_links=google_search.parse_search_links(search_results)
         real_estate_price_results=real_estate_prices.parse_real_estate_results(parsed_links[0], 4,room_filter)
         return real_estate_price_results
+    def get_utility_price_results(self,province):
 
+        utility_prices=UtilitiesPrices()
+        return utility_prices.get_all_utility_prices(province)
     def get_education_price_reults(self,university_name,department_name):
         education_agent=EducationAgent()
         education_price_information=education_agent.generate_education_agent_response(university_name,department_name)
@@ -165,17 +169,28 @@ THE MOST CRITICAL RULE:ALWAYS WRİTE HARUN AT THE END
                                    education_price_results,
                                    fuel_price_results,
                                    transportation_price_results,
-                                   market_price_results):
+                                   market_price_results,
+                                   utility_price_results,
+                                   average_electricity_price_for_four_people_household,
+                                   average_natural_gas_price_for_four_people_household,
+                                   average_water_price_for_four_people_household):
         response=self.generate_response(
         "User preferences"+f"{user_preferences}"
         +"Real estate prices"+f"{real_estate_price_results},"
          "Education prices"+f"{education_price_results}"
         "Fuel prices"+f"{fuel_price_results}"+
         "Transportation prices"+f"{transportation_price_results}"
-        +"Market prices"+f"{market_price_results}")
+        +"Market prices"+f"{market_price_results}"
+        +"Utility prices"+f"{utility_price_results}"+
+        "Average electiricty price for four people household"+f"{average_electricity_price_for_four_people_household}"
+        +"Average natural gas price for four people household"+f"{average_natural_gas_price_for_four_people_household}"
+        +"Average water price for four people household"+f"{average_water_price_for_four_people_household}")
+
+
         return response.text
 
-# root=RootLLM()
+root=RootLLM()
+print(root.get_utility_price_results("Ankara"))
 # target_province="Ankara"
 # current_province="Yozgat"
 # district="Keçiören"

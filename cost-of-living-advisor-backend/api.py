@@ -10,7 +10,7 @@ from mysql.connector import Error
 
 from classes_for_llm.Root import RootLLM
 from classes_for_llm.UserPreferencesManager import UserPreferencesManager
-
+from classes_for_llm.calculations import calculate_average_price_for_electricity,calculate_average_price_for_water,calculate_average_price_for_natural_gas
 app = Flask(__name__)
 
 app.config[
@@ -515,7 +515,16 @@ def generate_root_llm_response():
     grocery_items = user_data["user_profile"]["shopping_preferences"]["grocery_list"] or []
 
     market_results = root.get_market_price_results(grocery_items)
-    return root.generate_root_llm_response(user_data, real_estate_results, education_results, fuel_results, transportation_results, market_results)
+    #Utility price analysis
+    utility_prices=root.get_utility_price_results(province)
+    natural_gas_price = float(utility_prices['utilities']['natural_gas']['price_per_m3'])
+    water_price = float(utility_prices['utilities']['water']['price_per_m3'])
+    electricity_price = utility_prices['utilities']['electricity']['tariffs'][0]['price_per_kwh']
+    average_electricity_price_for_four_people_household = calculate_average_price_for_electricity(electricity_price)
+    average_natural_gas_price_for_four_people_household = calculate_average_price_for_natural_gas(natural_gas_price)
+    average_water_price_for_four_people_household = calculate_average_price_for_water(water_price)
+
+    return root.generate_root_llm_response(user_data, real_estate_results, education_results, fuel_results, transportation_results, market_results, utility_prices, average_electricity_price_for_four_people_household, average_natural_gas_price_for_four_people_household, average_water_price_for_four_people_household)
 
 @app.route('/api/preferences', methods=['PUT'])
 @jwt_required()

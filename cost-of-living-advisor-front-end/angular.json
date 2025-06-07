@@ -39,12 +39,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [],
-            "server": "src/main.server.ts",
-            "prerender": true,
-            "ssr": {
-              "entry": "server.ts"
-            }
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -60,7 +55,12 @@
                   "maximumError": "4kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "server": "src/main.server.ts",
+              "prerender": true,
+              "ssr": {
+                "entry": "server.ts"
+              }
             },
             "development": {
               "optimization": false,
@@ -77,7 +77,8 @@
               "buildTarget": "cost-of-living-advisor-front-end:build:production"
             },
             "development": {
-              "buildTarget": "cost-of-living-advisor-front-end:build:development"
+              "buildTarget": "cost-of-living-advisor-front-end:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

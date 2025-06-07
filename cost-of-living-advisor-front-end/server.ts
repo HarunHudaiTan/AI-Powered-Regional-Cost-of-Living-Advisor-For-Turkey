@@ -19,14 +19,22 @@ export function app(): express.Express {
 
   // Example Express Rest API endpoints
   // server.get('/api/**', (req, res) => { });
-  // Serve static files from /browser
-  server.get('**', express.static(browserDistFolder, {
+  
+  // Proxy API requests to backend (for production)
+  server.all('/api/**', (req, res) => {
+    // In production, you might want to proxy to your actual backend
+    // For now, just return a 503 Service Unavailable
+    res.status(503).json({ error: 'API backend not configured in production build' });
+  });
+  
+  // Serve static files from /browser (excluding API routes)
+  server.use(express.static(browserDistFolder, {
     maxAge: '1y',
-    index: 'index.html',
+    index: false, // Don't serve index.html for static files
   }));
 
-  // All regular routes use the Angular engine
-  server.get('**', (req, res, next) => {
+  // All regular routes use the Angular engine (excluding API routes)
+  server.get(/^(?!\/api\/).*/, (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
 
     commonEngine
