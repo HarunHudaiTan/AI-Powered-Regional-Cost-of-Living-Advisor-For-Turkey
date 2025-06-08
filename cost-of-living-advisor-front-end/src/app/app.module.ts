@@ -11,6 +11,7 @@ import { PreferencesComponent } from './components/preferences/preferences.compo
 import { AuthFormComponent } from './components/auth-form/auth-form.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AnalysisComponent } from './components/analysis/analysis.component';
+import { CurrencyFormatPipe, NumberFormatPipe } from './pipes/formatting.pipe';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,9 @@ import { AnalysisComponent } from './components/analysis/analysis.component';
     PreferencesComponent,
     AuthFormComponent,
     DashboardComponent,
-    AnalysisComponent
+    AnalysisComponent,
+    NumberFormatPipe,
+    CurrencyFormatPipe
   ],
   imports: [
     BrowserModule,

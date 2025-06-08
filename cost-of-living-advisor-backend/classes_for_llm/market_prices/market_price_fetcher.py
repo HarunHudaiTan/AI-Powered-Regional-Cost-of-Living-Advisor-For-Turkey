@@ -240,7 +240,7 @@ class Market_Price_Fetcher():
 # Example usage
 async def main():
     fetcher = Market_Price_Fetcher()
-    result = await fetcher.processShoppingList(["Şampuan","Kırmızı et","Bir litre süt","Ekmek", "Yumurta", "Elma"])
+    result = await fetcher.processShoppingList(["bir kg salatalık"])
     print(json.dumps(result, indent=4, ensure_ascii=False))
     
     # Calculate total price

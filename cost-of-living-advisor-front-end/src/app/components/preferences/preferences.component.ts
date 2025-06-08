@@ -26,7 +26,7 @@ export class PreferencesComponent implements OnInit {
   roomNumbers = ['1', '1+1', '2+1', '3+1', '4+1', '5+'];
   vehicleTypes = ['Car', 'Motorcycle', 'Bicycle'];
   fuelCapacities = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
-  fuelTypes = ['Gasoline', 'Diesel', 'LPG', 'Electric', 'Hybrid'];
+  fuelTypes = ['Gasoline', 'Diesel', 'LPG'];
   distributorPreferences = ['Shell', 'BP', 'Petrol Ofisi', 'Opet', 'Total', 'No Preference'];
 
   provinces: any[] = [];
@@ -274,7 +274,7 @@ export class PreferencesComponent implements OnInit {
     return '';
   }
 
-  // TEMPORARY FIX: Direct API calls to Flask backend
+  
   fetchProvinces(): void {
     const url = `${this.apiBaseUrl}/provinces`;
     console.log('Fetching provinces from:', url);
