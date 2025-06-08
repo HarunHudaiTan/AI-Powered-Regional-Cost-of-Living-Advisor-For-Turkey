@@ -130,15 +130,20 @@ Remember: Your analysis and recommendations will significantly impact major life
             current_province_fuel_data = json.loads(current_province_fuel_data_str)
             target_province_fuel_data = json.loads(target_province_fuel_data_str)
             print(current_province_fuel_data)
+            print(target_province_fuel_data)
+
             current_province_price, current_status = fuel_prices.extract_price_for_fuel_type(current_province_fuel_data, distributor_preference, vehicle_fuel_type)
             target_province_price, target_status = fuel_prices.extract_price_for_fuel_type(target_province_fuel_data, distributor_preference, vehicle_fuel_type)
+            print(current_province_price)
+            print(target_province_price)
 
             current_monthly_fuel_prices = current_province_price * fuel_tank_monthly_fill_count * fuel_tank_capacity
             target_city_monthly_fuel_prices = target_province_price * fuel_tank_monthly_fill_count * fuel_tank_capacity
 
             current_status_message = fuel_prices.get_status_message(current_status, current_province, distributor_preference, vehicle_fuel_type)
             target_status_message = fuel_prices.get_status_message(target_status, target_province, distributor_preference, vehicle_fuel_type)
-
+            print(current_status_message)
+            print(target_status_message)
             return {
                 "current_province":current_province,
                 "target_province":target_province,

@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text, create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 import os
 import mysql.connector
 from mysql.connector import Error
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
+
 from classes_for_llm.Root import RootLLM
 from classes_for_llm.UserPreferencesManager import UserPreferencesManager
 from classes_for_llm.calculations import calculate_average_price_for_electricity,calculate_average_price_for_water,calculate_average_price_for_natural_gas
@@ -63,12 +64,13 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
-# Enhanced CORS configuration to handle preflight requests properly
+
 CORS(app,
      origins=["http://localhost:4200", "http://127.0.0.1:4200"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-     allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
-     supports_credentials=True)
+     allow_headers=["Content-Type", "Authorization"],
+     supports_credentials=True,
+     expose_headers=["Content-Type", "Authorization"])
 
 
 class User(db.Model):
@@ -168,12 +170,12 @@ initialize_database()
 @app.before_request
 def handle_preflight():
     if request.method == "OPTIONS":
-        response = jsonify({'message': 'OK'})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        response = jsonify({'status': 'OK'})
+        response.headers.add("Access-Control-Allow-Origin", request.headers.get('Origin', '*'))
         response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
         response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
-
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
@@ -475,7 +477,7 @@ def generate_root_llm_response():
             }
         }
     }
-    
+
     province = user_data["user_profile"]["target_location"]["city"]
     district = user_data["user_profile"]["target_location"]["district"]
     room_filter = user_data["user_profile"]["housing_preferences"]["number_of_rooms"]
@@ -501,10 +503,8 @@ def generate_root_llm_response():
         fuel_tank_monthly_fill_count = user_data["user_profile"]["vehicle_ownership"]["fuel_tank_monthly_fill_count"]
         distributor_preference = user_data["user_profile"]["vehicle_ownership"]["distributor_preference"]
         vehicle_fuel_type = user_data["user_profile"]["vehicle_ownership"]["vehicle_fuel_type"]
-        fuel_results = root.get_fuel_price_results(owns_vehicle, current_province, target_province, fuel_tank_capacity,
-                                                   fuel_tank_monthly_fill_count, distributor_preference,
-                                                   vehicle_fuel_type)
-
+        fuel_results = root.get_fuel_price_results(owns_vehicle, current_province, target_province, fuel_tank_capacity,fuel_tank_monthly_fill_count, distributor_preference,vehicle_fuel_type)
+        print(fuel_results)
     # Transportation Price Analysis (only if uses public transportation)
     if user_data["user_profile"]["current_expenses"]["transportation"]["uses_public_transportation"]:
         province = user_data["user_profile"]["target_location"]["city"]
@@ -639,6 +639,7 @@ utilities_engine = create_engine(
 
 
 @app.route('/api/provinces', methods=['GET'])
+@cross_origin()
 def get_provinces():
     """
     Get all provinces from the utilities_turkey database
@@ -682,6 +683,7 @@ def get_provinces():
 
 
 @app.route('/api/provinces/<int:province_id>/districts', methods=['GET'])
+@cross_origin()
 def get_districts_by_province_id(province_id):
     """
     Get all districts for a specific province by province ID
@@ -749,6 +751,7 @@ def get_districts_by_province_id(province_id):
 
 
 @app.route('/api/provinces/<province_name>/districts', methods=['GET'])
+@cross_origin()
 def get_districts_by_province_name(province_name):
     """
     Get all districts for a specific province by province name

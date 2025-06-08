@@ -140,36 +140,47 @@ class FuelPrices():
         regions = fuel_data.get("regions", [])
         if not regions:
             return 0, "no_data"
-        
+
         region = regions[0]  # Assuming first region is the main one
         prices = region.get("prices", [])
         averages = region.get("averages", {})
-        
+
+        print("in extract price for fuel type:")
+        print(fuel_data)
+        print("distributor preference")
+        print(distributor_preference)
+        print("vehicle fuel type:")
+        print(vehicle_fuel_type)
+
+        # Convert fuel type to lowercase to match data structure
+        fuel_type_key = vehicle_fuel_type.lower()
+
         # If distributor preference is provided, try to find that distributor
         if distributor_preference:
-            distributor_found = False
             for price_info in prices:
                 if price_info.get("distributor") == distributor_preference:
-                    distributor_found = True
-                    fuel_price = price_info.get(vehicle_fuel_type)
+                    fuel_price = price_info.get(fuel_type_key)  # Use lowercase key
                     if fuel_price is not None:
                         # Convert "47.58 TL" to 47.58
+                        print(f"Found distributor price: {fuel_price}")
                         return float(fuel_price.replace(" TL", "")), "distributor_used"
                     else:
-                        # Distributor found but doesn't have this fuel type
-                        break
-            
-            if not distributor_found:
-                # Distributor not found, use average
-                avg_price = averages.get(vehicle_fuel_type, "0 TL")
-                return float(avg_price.replace(" TL", "")), "distributor_not_found"
-            else:
-                # Distributor found but doesn't have fuel type, use average
-                avg_price = averages.get(vehicle_fuel_type, "0 TL")
-                return float(avg_price.replace(" TL", "")), "fuel_type_not_available"
-        
+                        # Distributor found but doesn't have this fuel type, use average
+                        avg_price = averages.get(fuel_type_key, "0 TL")  # Use lowercase key
+                        print("distributor found but no fuel type, using average:")
+                        print(avg_price)
+                        return float(avg_price.replace(" TL", "")), "fuel_type_not_available"
+
+            # Distributor not found, use average
+            avg_price = averages.get(fuel_type_key, "0 TL")  # Use lowercase key
+            print("distributor not found, using average:")
+            print(avg_price)
+            return float(avg_price.replace(" TL", "")), "distributor_not_found"
+
         # No distributor preference, use average price
-        avg_price = averages.get(vehicle_fuel_type, "0 TL")
+        avg_price = averages.get(fuel_type_key, "0 TL")  # Use lowercase key
+        print("no distributor preference, using average:")
+        print(avg_price)
         return float(avg_price.replace(" TL", "")), "no_preference"
 
     def get_status_message(self, status, province, distributor, fuel_type):
@@ -186,7 +197,7 @@ class FuelPrices():
             return f"No fuel price data available for {province}"
 
 
-
+# fuel_prices = FuelPrices()
 # xyz = asyncio.run(fuel_prices.fetch_fuel_prices("canakkale"))
 #
 # print(xyz)
