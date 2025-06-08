@@ -4,6 +4,19 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { HttpClient } from '@angular/common/http';
 
+interface GroceryItem {
+  displayName: string;
+  backendValue: string;
+  category: string;
+  icon: string;
+}
+
+interface GroceryCategory {
+  name: string;
+  icon: string;
+  items: GroceryItem[];
+}
+
 @Component({
   selector: 'app-preferences',
   templateUrl: './preferences.component.html',
@@ -32,6 +45,88 @@ export class PreferencesComponent implements OnInit {
   provinces: any[] = [];
   currentLocationDistricts: any[] = [];
   targetLocationDistricts: any[] = [];
+  universities: string[] = [];
+
+  // Grocery categories and items
+  groceryCategories: GroceryCategory[] = [
+    {
+      name: 'Milk and Dairy Products',
+      icon: '🥛',
+      items: [
+        { displayName: 'Süt', backendValue: 'bir litre süt', category: 'süt-ürünleri', icon: '🥛' },
+        { displayName: 'Yoğurt', backendValue: 'bir kilogram yoğurt', category: 'süt-ürünleri', icon: '🥛' },
+        { displayName: 'Beyaz Peynir', backendValue: 'bir kilogram beyaz peynir', category: 'süt-ürünleri', icon: '🧀' },
+        { displayName: 'Kaşar Peyniri', backendValue: 'bir kilogram kaşar peyniri', category: 'süt-ürünleri', icon: '🧀' },
+        { displayName: 'Tereyağı', backendValue: 'bir kilogram tereyağı', category: 'süt-ürünleri', icon: '🧈' },
+        { displayName: 'Ayran', backendValue: 'bir litre ayran', category: 'süt-ürünleri', icon: '🥛' }
+      ]
+    },
+    {
+      name: 'Meat and Chicken',
+      icon: '🍗',
+      items: [
+        { displayName: 'Tavuk Eti', backendValue: 'bir kilogram tavuk eti', category: 'et-tavuk', icon: '🍗' },
+        { displayName: 'Dana Eti', backendValue: 'bir kilogram dana eti', category: 'et-tavuk', icon: '🥩' },
+        { displayName: 'Kuzu Eti', backendValue: 'bir kilogram kuzu eti', category: 'et-tavuk', icon: '🥩' },
+        { displayName: 'Köfte', backendValue: 'bir kilogram köfte', category: 'et-tavuk', icon: '🍖' },
+        { displayName: 'Sosis', backendValue: 'bir kilogram sosis', category: 'et-tavuk', icon: '🌭' },
+        { displayName: 'Sucuk', backendValue: 'bir kilogram sucuk', category: 'et-tavuk', icon: '🌭' }
+      ]
+    },
+    {
+      name: 'Fruit and Vegtables',
+      icon: '🥕',
+      items: [
+        { displayName: 'Domates', backendValue: 'bir kilogram domates', category: 'meyve-sebze', icon: '🍅' },
+        { displayName: 'Salatalık', backendValue: 'bir kilogram salatalık', category: 'meyve-sebze', icon: '🥒' },
+        { displayName: 'Soğan', backendValue: 'bir kilogram soğan', category: 'meyve-sebze', icon: '🧅' },
+        { displayName: 'Patates', backendValue: 'bir kilogram patates', category: 'meyve-sebze', icon: '🥔' },
+        { displayName: 'Havuç', backendValue: 'bir kilogram havuç', category: 'meyve-sebze', icon: '🥕' },
+        { displayName: 'Elma', backendValue: 'bir kilogram elma', category: 'meyve-sebze', icon: '🍎' },
+        { displayName: 'Muz', backendValue: 'bir kilogram muz', category: 'meyve-sebze', icon: '🍌' },
+        { displayName: 'Portakal', backendValue: 'bir kilogram portakal', category: 'meyve-sebze', icon: '🍊' }
+      ]
+    },
+    {
+      name: 'Grains and Legumes',
+      icon: '🌾',
+      items: [
+        { displayName: 'Ekmek', backendValue: 'bir kilogram ekmek', category: 'tahıl-baklagil', icon: '🍞' },
+        { displayName: 'Pirinç', backendValue: 'bir kilogram pirinç', category: 'tahıl-baklagil', icon: '🍚' },
+        { displayName: 'Makarna', backendValue: 'bir kilogram makarna', category: 'tahıl-baklagil', icon: '🍝' },
+        { displayName: 'Bulgur', backendValue: 'bir kilogram bulgur', category: 'tahıl-baklagil', icon: '🌾' },
+        { displayName: 'Mercimek', backendValue: 'bir kilogram mercimek', category: 'tahıl-baklagil', icon: '🫘' },
+        { displayName: 'Nohut', backendValue: 'bir kilogram nohut', category: 'tahıl-baklagil', icon: '🫘' }
+      ]
+    },
+    {
+      name: 'Essential Foods',
+      icon: '🧂',
+      items: [
+        { displayName: 'Tuz', backendValue: 'bir kilogram tuz', category: 'temel-gıda', icon: '🧂' },
+        { displayName: 'Şeker', backendValue: 'bir kilogram şeker', category: 'temel-gıda', icon: '🍬' },
+        { displayName: 'Un', backendValue: 'bir kilogram un', category: 'temel-gıda', icon: '🌾' },
+        { displayName: 'Ayçiçek Yağı', backendValue: 'bir litre ayçiçek yağı', category: 'temel-gıda', icon: '🛢️' },
+        { displayName: 'Sirke', backendValue: 'bir litre sirke', category: 'temel-gıda', icon: '🍶' },
+        { displayName: 'Zeytin', backendValue: 'bir kilogram zeytin', category: 'temel-gıda', icon: '🫒' }
+      ]
+    },
+    {
+      name: 'Beverages',
+      icon: '🥤',
+      items: [
+        { displayName: 'Su', backendValue: 'bir litre su', category: 'içecek', icon: '💧' },
+        { displayName: 'Çay', backendValue: 'bir kilogram çay', category: 'içecek', icon: '🍵' },
+        { displayName: 'Kahve', backendValue: 'bir kilogram kahve', category: 'içecek', icon: '☕' },
+        { displayName: 'Meyve Suyu', backendValue: 'bir litre meyve suyu', category: 'içecek', icon: '🧃' },
+        { displayName: 'Kola', backendValue: 'bir litre kola', category: 'içecek', icon: '🥤' }
+      ]
+    }
+  ];
+
+  // Selected grocery items tracking
+  selectedGroceryItems = new Set<string>();
+  groceryItemMappings = new Map<string, string>();
 
   constructor(
     private fb: FormBuilder,
@@ -54,6 +149,7 @@ export class PreferencesComponent implements OnInit {
     });
 
     this.fetchProvinces();
+    this.fetchUniversities();
   }
 
   createForm(): FormGroup {
@@ -128,16 +224,117 @@ export class PreferencesComponent implements OnInit {
     });
   }
 
+  // Grocery list methods
   get groceryList(): FormArray {
     return this.preferencesForm.get('shopping_preferences.grocery_list') as FormArray;
   }
 
+  toggleGroceryItem(displayName: string, backendValue: string): void {
+    if (this.selectedGroceryItems.has(displayName)) {
+      // Remove item
+      this.selectedGroceryItems.delete(displayName);
+      this.groceryItemMappings.delete(displayName);
+      
+      // Remove from FormArray
+      const index = this.groceryList.controls.findIndex(control => 
+        control.value === backendValue
+      );
+      if (index > -1) {
+        this.groceryList.removeAt(index);
+      }
+    } else {
+      // Add item
+      this.selectedGroceryItems.add(displayName);
+      this.groceryItemMappings.set(displayName, backendValue);
+      
+      // Add to FormArray
+      const item = this.fb.control(backendValue, Validators.required);
+      this.groceryList.push(item);
+    }
+  }
+
+  removeGroceryItem(displayName: string): void {
+    if (this.selectedGroceryItems.has(displayName)) {
+      const backendValue = this.groceryItemMappings.get(displayName);
+      
+      this.selectedGroceryItems.delete(displayName);
+      this.groceryItemMappings.delete(displayName);
+      
+      // Remove from FormArray
+      const index = this.groceryList.controls.findIndex(control => 
+        control.value === backendValue
+      );
+      if (index > -1) {
+        this.groceryList.removeAt(index);
+      }
+    }
+  }
+
+  clearAllGroceryItems(): void {
+    this.selectedGroceryItems.clear();
+    this.groceryItemMappings.clear();
+    
+    // Clear FormArray
+    while (this.groceryList.length !== 0) {
+      this.groceryList.removeAt(0);
+    }
+  }
+
+  isGroceryItemSelected(displayName: string): boolean {
+    return this.selectedGroceryItems.has(displayName);
+  }
+
+  getSelectedGroceryItemsArray(): string[] {
+    return Array.from(this.selectedGroceryItems);
+  }
+
+  onEducationAnalysisChange(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    if (!checkbox.checked) {
+      // Clear education fields when unchecked
+      this.preferencesForm.patchValue({
+        current_expenses: {
+          education: {
+            target_university: '',
+            department_name: '',
+            current_tuition_semester: 0
+          }
+        }
+      });
+    }
+  }
+
+  // Universities API
+  fetchUniversities(): void {
+    const url = `${this.apiBaseUrl}/universities`;
+    console.log('Fetching universities from:', url);
+    
+    this.http.get(url).subscribe({
+      next: (response: any) => {
+        if (response.success && response.data) {
+          this.universities = response.data;
+          console.log('Universities loaded:', this.universities);
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching universities:', error);
+        this.error = 'Failed to load universities. Please check if the backend is running.';
+      }
+    });
+  }
+
+  getGroceryListForBackend(): string[] {
+    return Array.from(this.groceryItemMappings.values());
+  }
+
   addGroceryItem(): void {
+    // This method is kept for backward compatibility but not used in new UI
     const item = this.fb.control('', Validators.required);
     this.groceryList.push(item);
   }
 
-  removeGroceryItem(index: number): void {
+  removeGroceryItemByIndex(index: number): void {
+    // This method is kept for backward compatibility but not used in new UI
     this.groceryList.removeAt(index);
   }
 
@@ -202,13 +399,34 @@ export class PreferencesComponent implements OnInit {
       this.fetchDistrictsByProvinceName(userProfile.target_location.city, 'target');
     }
     
-    // Handle grocery list separately since it's a FormArray
+    // Handle grocery list - reconstruct from backend data
     if (userProfile.shopping_preferences?.grocery_list) {
       const groceryArray = this.preferencesForm.get('shopping_preferences.grocery_list') as FormArray;
       groceryArray.clear();
       
-      userProfile.shopping_preferences.grocery_list.forEach((item: string) => {
-        const groceryItem = this.fb.control(item, Validators.required);
+      // Clear current selections
+      this.selectedGroceryItems.clear();
+      this.groceryItemMappings.clear();
+      
+      userProfile.shopping_preferences.grocery_list.forEach((backendValue: string) => {
+        // Find the display name for this backend value
+        let displayName = '';
+        for (const category of this.groceryCategories) {
+          const item = category.items.find(item => item.backendValue === backendValue);
+          if (item) {
+            displayName = item.displayName;
+            break;
+          }
+        }
+        
+        if (displayName) {
+          // Add to selections
+          this.selectedGroceryItems.add(displayName);
+          this.groceryItemMappings.set(displayName, backendValue);
+        }
+        
+        // Add to FormArray
+        const groceryItem = this.fb.control(backendValue, Validators.required);
         groceryArray.push(groceryItem);
       });
     }
@@ -223,8 +441,14 @@ export class PreferencesComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
+    // Get the form data and ensure grocery list has the backend values
     const formData = {
-      user_profile: this.preferencesForm.value
+      user_profile: {
+        ...this.preferencesForm.value,
+        shopping_preferences: {
+          grocery_list: this.getGroceryListForBackend()
+        }
+      }
     };
 
     console.log('Submitting form data:', formData);
@@ -274,7 +498,7 @@ export class PreferencesComponent implements OnInit {
     return '';
   }
 
-  
+  // TEMPORARY FIX: Direct API calls to Flask backend
   fetchProvinces(): void {
     const url = `${this.apiBaseUrl}/provinces`;
     console.log('Fetching provinces from:', url);

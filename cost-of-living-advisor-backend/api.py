@@ -880,7 +880,58 @@ def get_all_districts():
             'error': 'An unexpected error occurred',
             'message': str(e)
         }), 500
+@app.route('/api/universities', methods=['GET'])
+@cross_origin()
+def get_universities():
+    """
+    Get all university names from the utilities_turkey database
+    Optional query parameters:
+    - search: Filter universities by name (partial match)
+    Returns: JSON array of university names only
+    """
+    try:
+        search_term = request.args.get('search', '').strip()
 
+        with utilities_engine.connect() as connection:
+            if search_term:
+                query = text("""
+                    SELECT name
+                    FROM universities
+                    WHERE name LIKE :search_term
+                    ORDER BY name
+                """)
+                result = connection.execute(query, {'search_term': f'%{search_term}%'})
+            else:
+                query = text("""
+                    SELECT name
+                    FROM universities
+                    ORDER BY name
+                """)
+                result = connection.execute(query)
+
+            universities = []
+            for row in result:
+                universities.append(row.name)
+
+            return jsonify({
+                'success': True,
+                'data': universities,
+                'count': len(universities),
+                'search_term': search_term if search_term else None
+            }), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Database error occurred',
+            'message': str(e)
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred',
+            'message': str(e)
+        }), 500
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)

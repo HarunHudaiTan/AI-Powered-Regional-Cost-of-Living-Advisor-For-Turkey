@@ -137,24 +137,29 @@
           <div formGroupName="education">
             <div class="checkbox-group">
               <label class="checkbox-label">
-                <input type="checkbox" formControlName="wants_education_analysis">
+                <input type="checkbox" formControlName="wants_education_analysis" (change)="onEducationAnalysisChange($event)">
                 <span class="checkmark"></span>
                 I want education cost analysis
               </label>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Target University</label>
-                <input type="text" formControlName="target_university" class="form-input" placeholder="University name">
+            <div class="education-details" *ngIf="preferencesForm.get('current_expenses.education.wants_education_analysis')?.value">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Target University</label>
+                  <select formControlName="target_university" class="form-select">
+                    <option value="">Select a university</option>
+                    <option *ngFor="let university of universities" [value]="university">{{ university }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Department Name</label>
+                  <input type="text" formControlName="department_name" class="form-input" placeholder="Department/Program name">
+                </div>
               </div>
               <div class="form-group">
-                <label class="form-label">Department Name</label>
-                <input type="text" formControlName="department_name" class="form-input" placeholder="Department/Program name">
+                <label class="form-label">Current Tuition per Semester (₺)</label>
+                <input type="number" formControlName="current_tuition_semester" class="form-input" placeholder="Tuition cost" min="0">
               </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Current Tuition per Semester (₺)</label>
-              <input type="number" formControlName="current_tuition_semester" class="form-input" placeholder="Tuition cost" min="0">
             </div>
           </div>
         </div>
@@ -271,27 +276,63 @@
           </div>
         </div>
 
+        <!-- Market Listesi Section with App-Matching Style -->
         <div class="section-container">
-          <h3 class="section-title">Shopping Preferences</h3>
+          <h3 class="section-title">Market Listesi</h3>
           <div formGroupName="shopping_preferences">
-            <div class="grocery-section">
-              <div class="grocery-header">
-                <label class="form-label">Grocery List</label>
-                <button type="button" class="add-btn" (click)="addGroceryItem()">Add Item</button>
-              </div>
-              <div class="grocery-items" formArrayName="grocery_list">
-                <div class="grocery-item" *ngFor="let item of groceryList.controls; let i = index">
-                  <div class="grocery-item-content">
-                    <div class="form-group">
-                      <input type="text" [formControlName]="i" class="form-input" placeholder="Item name">
-                    </div>
-                    <button type="button" class="remove-btn" (click)="removeGroceryItem(i)">×</button>
-                  </div>
+            
+            <!-- Grocery Categories -->
+            <div class="grocery-categories">
+              <div class="grocery-category" *ngFor="let category of groceryCategories">
+                <div class="category-header">
+                  <span class="category-icon">{{ category.icon }}</span>
+                  <span class="category-name">{{ category.name }}</span>
                 </div>
-                <div class="empty-grocery" *ngIf="groceryList.length === 0">
-                  <p>No grocery items added. Click "Add Item" to start building your grocery list.</p>
+                <div class="grocery-grid">
+                  <label 
+                    class="grocery-checkbox-item" 
+                    *ngFor="let item of category.items"
+                    [class.selected]="isGroceryItemSelected(item.displayName)">
+                    <input 
+                      type="checkbox" 
+                      [checked]="isGroceryItemSelected(item.displayName)"
+                      (change)="toggleGroceryItem(item.displayName, item.backendValue)">
+                    <span class="grocery-label">{{ item.displayName }}</span>
+                  </label>
                 </div>
               </div>
+            </div>
+
+            <!-- Selected Items Summary -->
+            <div class="selected-summary" *ngIf="selectedGroceryItems.size > 0">
+              <div class="selected-header">
+                <span class="selected-count">{{ selectedGroceryItems.size }} ürün seçildi</span>
+                <button 
+                  type="button" 
+                  class="clear-btn" 
+                  (click)="clearAllGroceryItems()">
+                  Tümünü Temizle
+                </button>
+              </div>
+              <div class="selected-tags">
+                <span 
+                  class="selected-tag" 
+                  *ngFor="let item of getSelectedGroceryItemsArray()">
+                  {{ item }}
+                  <button 
+                    type="button" 
+                    class="remove-tag-btn" 
+                    (click)="removeGroceryItem(item)">×</button>
+                </span>
+              </div>
+            </div>
+
+            <!-- Hidden FormArray for backend compatibility -->
+            <div style="display: none;" formArrayName="grocery_list">
+              <input 
+                *ngFor="let item of groceryList.controls; let i = index" 
+                [formControlName]="i" 
+                type="hidden">
             </div>
           </div>
         </div>
