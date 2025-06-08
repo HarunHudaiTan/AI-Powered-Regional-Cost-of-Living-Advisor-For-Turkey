@@ -115,7 +115,7 @@
           <div formGroupName="transportation">
             <div class="checkbox-group">
               <label class="checkbox-label">
-                <input type="checkbox" formControlName="uses_public_transportation">
+                <input type="checkbox" formControlName="uses_public_transportation" (change)="onPublicTransportationChange($event)">
                 <span class="checkmark"></span>
                 I use public transportation
               </label>
@@ -125,9 +125,13 @@
                 I am a student
               </label>
             </div>
-            <div class="form-group">
-              <label class="form-label">Public Transport Pass (₺)</label>
-              <input type="number" formControlName="public_transport_monthly_pass" class="form-input" placeholder="Monthly pass cost" min="0">
+            
+            <!-- Public Transport Pass field - only show when checkbox is checked -->
+            <div class="transport-details" *ngIf="preferencesForm.get('current_expenses.transportation.uses_public_transportation')?.value">
+              <div class="form-group">
+                <label class="form-label">Public Transport Pass (₺)</label>
+                <input type="number" formControlName="public_transport_monthly_pass" class="form-input" placeholder="Monthly pass cost" min="0">
+              </div>
             </div>
           </div>
         </div>

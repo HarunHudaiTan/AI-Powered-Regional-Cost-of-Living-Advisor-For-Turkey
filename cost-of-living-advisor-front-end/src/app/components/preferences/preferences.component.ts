@@ -565,6 +565,19 @@ export class PreferencesComponent implements OnInit {
       }
     });
   }
+  onPublicTransportationChange(event: Event): void {
+  const checkbox = event.target as HTMLInputElement;
+  if (!checkbox.checked) {
+    // Clear the public transport pass field when unchecked
+    this.preferencesForm.patchValue({
+      current_expenses: {
+        transportation: {
+          public_transport_monthly_pass: 0
+        }
+      }
+    });
+  }
+}
 
   onProvinceChange(event: Event, locationType: 'current' | 'target'): void {
     const select = event.target as HTMLSelectElement;
