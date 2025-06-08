@@ -107,7 +107,7 @@ Remember: Your analysis and recommendations will significantly impact major life
         search_results=google_search.search("site:emlakjet.com "+province+" "+district+" kiralık daire fiyatları")
         print(search_results)
         parsed_links=google_search.parse_search_links(search_results)
-        real_estate_price_results=real_estate_prices.parse_real_estate_results(parsed_links[0], 4,room_filter)
+        real_estate_price_results=real_estate_prices.scrape_real_estate_async(parsed_links[0],4,room_filter)
         return real_estate_price_results
     def get_utility_price_results(self,province):
 
@@ -189,14 +189,14 @@ Remember: Your analysis and recommendations will significantly impact major life
 
         return response.text
 
-root=RootLLM()
-print(root.get_utility_price_results("Ankara"))
+# root=RootLLM()
+# print(root.get_utility_price_results("Ankara"))
 # target_province="Ankara"
 # current_province="Yozgat"
 # district="Keçiören"
 # room_filter="3+1"
 # real_estate_price_results=root.get_real_estate_price_results(target_province,district,room_filter)
-#
+
 # university_name="Ted Üniversitesi"
 # department_name="Mühendislik"
 # education_price_results=root.get_education_price_reults(university_name,department_name)

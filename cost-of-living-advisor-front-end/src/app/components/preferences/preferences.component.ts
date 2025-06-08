@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-preferences',
@@ -17,6 +18,9 @@ export class PreferencesComponent implements OnInit {
   totalSteps = 6;
   isEditMode = false;
 
+  // API Base URL - change this to your Flask server
+  private apiBaseUrl = 'http://127.0.0.1:5000/api';
+
   // Options for dropdowns
   housingTypes = ['Apartment', 'House', 'Studio', 'Shared Room'];
   roomNumbers = ['1', '1+1', '2+1', '3+1', '4+1', '5+'];
@@ -25,10 +29,15 @@ export class PreferencesComponent implements OnInit {
   fuelTypes = ['Gasoline', 'Diesel', 'LPG', 'Electric', 'Hybrid'];
   distributorPreferences = ['Shell', 'BP', 'Petrol Ofisi', 'Opet', 'Total', 'No Preference'];
 
+  provinces: any[] = [];
+  currentLocationDistricts: any[] = [];
+  targetLocationDistricts: any[] = [];
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     this.preferencesForm = this.createForm();
   }
@@ -43,6 +52,8 @@ export class PreferencesComponent implements OnInit {
         this.loadExistingPreferences();
       }
     });
+
+    this.fetchProvinces();
   }
 
   createForm(): FormGroup {
@@ -183,6 +194,14 @@ export class PreferencesComponent implements OnInit {
     // Populate the form with existing data
     this.preferencesForm.patchValue(userProfile);
     
+    // Load districts for existing data
+    if (userProfile.current_location?.city) {
+      this.fetchDistrictsByProvinceName(userProfile.current_location.city, 'current');
+    }
+    if (userProfile.target_location?.city) {
+      this.fetchDistrictsByProvinceName(userProfile.target_location.city, 'target');
+    }
+    
     // Handle grocery list separately since it's a FormArray
     if (userProfile.shopping_preferences?.grocery_list) {
       const groceryArray = this.preferencesForm.get('shopping_preferences.grocery_list') as FormArray;
@@ -208,6 +227,8 @@ export class PreferencesComponent implements OnInit {
       user_profile: this.preferencesForm.value
     };
 
+    console.log('Submitting form data:', formData);
+
     const saveOperation = this.isEditMode 
       ? this.authService.updatePreferences(formData)
       : this.authService.createPreferences(formData);
@@ -226,6 +247,7 @@ export class PreferencesComponent implements OnInit {
       error: (error) => {
         this.loading = false;
         this.error = error.error?.msg || `Failed to ${this.isEditMode ? 'update' : 'save'} preferences. Please try again.`;
+        console.error('Save error:', error);
       }
     });
   }
@@ -250,5 +272,102 @@ export class PreferencesComponent implements OnInit {
       if (field.errors['max']) return `Maximum value is ${field.errors['max'].max}`;
     }
     return '';
+  }
+
+  // TEMPORARY FIX: Direct API calls to Flask backend
+  fetchProvinces(): void {
+    const url = `${this.apiBaseUrl}/provinces`;
+    console.log('Fetching provinces from:', url);
+    
+    this.http.get(url).subscribe({
+      next: (response: any) => {
+        this.provinces = response.data;
+        console.log('Provinces loaded:', this.provinces);
+      },
+      error: (error) => {
+        console.error('Error fetching provinces:', error);
+        this.error = 'Failed to load provinces. Please check if the backend is running.';
+      }
+    });
+  }
+
+  fetchDistricts(provinceId: number, locationType: 'current' | 'target'): void {
+    const url = `${this.apiBaseUrl}/provinces/${provinceId}/districts`;
+    console.log(`Fetching districts from: ${url}`);
+    
+    this.http.get(url).subscribe({
+      next: (response: any) => {
+        console.log('Districts response:', response);
+        if (locationType === 'current') {
+          this.currentLocationDistricts = response.districts || [];
+          this.preferencesForm.get('current_location.district')?.reset();
+        } else {
+          this.targetLocationDistricts = response.districts || [];
+          this.preferencesForm.get('target_location.district')?.reset();
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching districts:', error);
+        if (locationType === 'current') {
+          this.currentLocationDistricts = [];
+        } else {
+          this.targetLocationDistricts = [];
+        }
+      }
+    });
+  }
+
+  fetchDistrictsByProvinceName(provinceName: string, locationType: 'current' | 'target'): void {
+    const encodedProvinceName = encodeURIComponent(provinceName.trim());
+    const url = `${this.apiBaseUrl}/provinces/${encodedProvinceName}/districts`;
+    console.log(`Fetching districts by name from: ${url}`);
+    
+    this.http.get(url).subscribe({
+      next: (response: any) => {
+        console.log('Districts response for existing data:', response);
+        if (locationType === 'current') {
+          this.currentLocationDistricts = response.districts || [];
+        } else {
+          this.targetLocationDistricts = response.districts || [];
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching districts by name:', error);
+        if (locationType === 'current') {
+          this.currentLocationDistricts = [];
+        } else {
+          this.targetLocationDistricts = [];
+        }
+      }
+    });
+  }
+
+  onProvinceChange(event: Event, locationType: 'current' | 'target'): void {
+    const select = event.target as HTMLSelectElement;
+    const provinceName = select.value;
+    
+    console.log(`Province selected: ${provinceName} for ${locationType}`);
+    
+    if (provinceName) {
+      // Find the province ID to fetch districts
+      const selectedProvince = this.provinces.find(p => p.province_name === provinceName);
+      
+      if (selectedProvince) {
+        console.log(`Found province ID: ${selectedProvince.id} for ${provinceName}`);
+        // Fetch districts using the province ID
+        this.fetchDistricts(selectedProvince.id, locationType);
+      } else {
+        console.error(`Province not found: ${provinceName}`);
+      }
+    } else {
+      // Clear districts when no province is selected
+      if (locationType === 'current') {
+        this.currentLocationDistricts = [];
+        this.preferencesForm.get('current_location.district')?.reset();
+      } else {
+        this.targetLocationDistricts = [];
+        this.preferencesForm.get('target_location.district')?.reset();
+      }
+    }
   }
 }

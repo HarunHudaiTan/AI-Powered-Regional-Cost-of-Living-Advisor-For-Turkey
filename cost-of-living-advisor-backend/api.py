@@ -7,7 +7,8 @@ from datetime import timedelta
 import os
 import mysql.connector
 from mysql.connector import Error
-
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 from classes_for_llm.Root import RootLLM
 from classes_for_llm.UserPreferencesManager import UserPreferencesManager
 from classes_for_llm.calculations import calculate_average_price_for_electricity,calculate_average_price_for_water,calculate_average_price_for_natural_gas
@@ -623,6 +624,259 @@ def delete_preferences():
     except Exception as e:
         return jsonify({"msg": f"Error deleting preferences: {str(e)}"}), 500
 
+
+# Database configuration for utilities_turkey database
+UTILITIES_DB_HOST = 'localhost'
+UTILITIES_DB_PORT = 3306
+UTILITIES_DB_USER = 'root'
+UTILITIES_DB_PASSWORD = 'rootpassword'
+UTILITIES_DB_NAME = 'utilities_turkey'
+
+# Create a separate engine for utilities database
+utilities_engine = create_engine(
+    f'mysql+mysqlconnector://{UTILITIES_DB_USER}:{UTILITIES_DB_PASSWORD}@{UTILITIES_DB_HOST}:{UTILITIES_DB_PORT}/{UTILITIES_DB_NAME}'
+)
+
+
+@app.route('/api/provinces', methods=['GET'])
+def get_provinces():
+    """
+    Get all provinces from the utilities_turkey database
+    Returns: JSON array of provinces with id, province_name, and province_code
+    """
+    try:
+        with utilities_engine.connect() as connection:
+            query = text("""
+                SELECT id, province_name, province_code 
+                FROM provinces 
+                ORDER BY province_name
+            """)
+            result = connection.execute(query)
+
+            provinces = []
+            for row in result:
+                provinces.append({
+                    'id': row.id,
+                    'province_name': row.province_name,
+                    'province_code': row.province_code
+                })
+
+            return jsonify({
+                'success': True,
+                'data': provinces,
+                'count': len(provinces)
+            }), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Database error occurred',
+            'message': str(e)
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/provinces/<int:province_id>/districts', methods=['GET'])
+def get_districts_by_province_id(province_id):
+    """
+    Get all districts for a specific province by province ID
+    Args: province_id (int): The ID of the province
+    Returns: JSON array of districts with id, district_name, and province info
+    """
+    try:
+        with utilities_engine.connect() as connection:
+            # First check if province exists
+            province_query = text("""
+                SELECT id, province_name, province_code 
+                FROM provinces 
+                WHERE id = :province_id
+            """)
+            province_result = connection.execute(province_query, {'province_id': province_id})
+            province = province_result.fetchone()
+
+            if not province:
+                return jsonify({
+                    'success': False,
+                    'error': 'Province not found',
+                    'message': f'Province with ID {province_id} does not exist'
+                }), 404
+
+            # Get districts for the province
+            districts_query = text("""
+                SELECT d.id, d.district_name, d.province_id
+                FROM districts d
+                WHERE d.province_id = :province_id
+                ORDER BY d.district_name
+            """)
+            districts_result = connection.execute(districts_query, {'province_id': province_id})
+
+            districts = []
+            for row in districts_result:
+                districts.append({
+                    'id': row.id,
+                    'district_name': row.district_name,
+                    'province_id': row.province_id
+                })
+
+            return jsonify({
+                'success': True,
+                'province': {
+                    'id': province.id,
+                    'province_name': province.province_name,
+                    'province_code': province.province_code
+                },
+                'districts': districts,
+                'count': len(districts)
+            }), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Database error occurred',
+            'message': str(e)
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/provinces/<province_name>/districts', methods=['GET'])
+def get_districts_by_province_name(province_name):
+    """
+    Get all districts for a specific province by province name
+    Args: province_name (str): The name of the province
+    Returns: JSON array of districts with id, district_name, and province info
+    """
+    try:
+        with utilities_engine.connect() as connection:
+            # First check if province exists and get its info
+            province_query = text("""
+                SELECT id, province_name, province_code 
+                FROM provinces 
+                WHERE province_name = :province_name
+            """)
+            province_result = connection.execute(province_query, {'province_name': province_name})
+            province = province_result.fetchone()
+
+            if not province:
+                return jsonify({
+                    'success': False,
+                    'error': 'Province not found',
+                    'message': f'Province "{province_name}" does not exist'
+                }), 404
+
+            # Get districts for the province
+            districts_query = text("""
+                SELECT d.id, d.district_name, d.province_id
+                FROM districts d
+                INNER JOIN provinces p ON d.province_id = p.id
+                WHERE p.province_name = :province_name
+                ORDER BY d.district_name
+            """)
+            districts_result = connection.execute(districts_query, {'province_name': province_name})
+
+            districts = []
+            for row in districts_result:
+                districts.append({
+                    'id': row.id,
+                    'district_name': row.district_name,
+                    'province_id': row.province_id
+                })
+
+            return jsonify({
+                'success': True,
+                'province': {
+                    'id': province.id,
+                    'province_name': province.province_name,
+                    'province_code': province.province_code
+                },
+                'districts': districts,
+                'count': len(districts)
+            }), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Database error occurred',
+            'message': str(e)
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/districts', methods=['GET'])
+def get_all_districts():
+    """
+    Get all districts with their province information
+    Optional query parameters:
+    - search: Filter districts by name (partial match)
+    Returns: JSON array of all districts with province information
+    """
+    try:
+        search_term = request.args.get('search', '').strip()
+
+        with utilities_engine.connect() as connection:
+            if search_term:
+                query = text("""
+                    SELECT d.id, d.district_name, d.province_id, 
+                           p.province_name, p.province_code
+                    FROM districts d
+                    INNER JOIN provinces p ON d.province_id = p.id
+                    WHERE d.district_name LIKE :search_term
+                    ORDER BY p.province_name, d.district_name
+                """)
+                result = connection.execute(query, {'search_term': f'%{search_term}%'})
+            else:
+                query = text("""
+                    SELECT d.id, d.district_name, d.province_id, 
+                           p.province_name, p.province_code
+                    FROM districts d
+                    INNER JOIN provinces p ON d.province_id = p.id
+                    ORDER BY p.province_name, d.district_name
+                """)
+                result = connection.execute(query)
+
+            districts = []
+            for row in result:
+                districts.append({
+                    'id': row.id,
+                    'district_name': row.district_name,
+                    'province_id': row.province_id,
+                    'province_name': row.province_name,
+                    'province_code': row.province_code
+                })
+
+            return jsonify({
+                'success': True,
+                'data': districts,
+                'count': len(districts),
+                'search_term': search_term if search_term else None
+            }), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Database error occurred',
+            'message': str(e)
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred',
+            'message': str(e)
+        }), 500
 
 # Run the app
 if __name__ == '__main__':

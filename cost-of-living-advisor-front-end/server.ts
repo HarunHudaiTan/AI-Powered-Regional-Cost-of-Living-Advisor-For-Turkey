@@ -4,6 +4,7 @@ import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import AppServerModule from './src/main.server';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -18,20 +19,28 @@ export function app(): express.Express {
   server.set('views', browserDistFolder);
 
   // Example Express Rest API endpoints
-  // server.get('/api/**', (req, res) => { });
-  
-  // Proxy API requests to backend (for production)
-  server.all('/api/**', (req, res) => {
-    // In production, you might want to proxy to your actual backend
-    // For now, just return a 503 Service Unavailable
-    res.status(503).json({ error: 'API backend not configured in production build' });
+  // Proxy API requests to backend
+  server.use('/api', (req, res, next) => {
+    // Forward to Flask backend
+    const proxyTarget = 'http://127.0.0.1:5000';
+    const options = {
+      target: proxyTarget,
+      changeOrigin: true,
+      secure: false,
+    };
+
+    // Create proxy
+    const proxy = createProxyMiddleware(options);
+    return proxy(req, res, next);
   });
-  
+
   // Serve static files from /browser (excluding API routes)
-  server.use(express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: false, // Don't serve index.html for static files
-  }));
+  server.use(
+    express.static(browserDistFolder, {
+      maxAge: '1y',
+      index: false, // Don't serve index.html for static files
+    })
+  );
 
   // All regular routes use the Angular engine (excluding API routes)
   server.get(/^(?!\/api\/).*/, (req, res, next) => {

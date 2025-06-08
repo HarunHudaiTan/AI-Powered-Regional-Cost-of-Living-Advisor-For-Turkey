@@ -24,11 +24,17 @@
           <div class="form-row" formGroupName="current_location">
             <div class="form-group">
               <label class="form-label">City</label>
-              <input type="text" formControlName="city" class="form-input" placeholder="Enter your current city">
+              <select formControlName="city" class="form-select" (change)="onProvinceChange($event, 'current')">
+                <option value="">Select a city</option>
+                <option *ngFor="let province of provinces" [value]="province.province_name">{{ province.province_name }}</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">District</label>
-              <input type="text" formControlName="district" class="form-input" placeholder="Enter your current district">
+              <select formControlName="district" class="form-select">
+                <option value="">Select a district</option>
+                <option *ngFor="let district of currentLocationDistricts" [value]="district.district_name">{{ district.district_name }}</option>
+              </select>
             </div>
           </div>
         </div>
@@ -38,11 +44,17 @@
           <div class="form-row" formGroupName="target_location">
             <div class="form-group">
               <label class="form-label">City</label>
-              <input type="text" formControlName="city" class="form-input" placeholder="Enter your target city">
+              <select formControlName="city" class="form-select" (change)="onProvinceChange($event, 'target')">
+                <option value="">Select a city</option>
+                <option *ngFor="let province of provinces" [value]="province.province_name">{{ province.province_name }}</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">District</label>
-              <input type="text" formControlName="district" class="form-input" placeholder="Enter your target district">
+              <select formControlName="district" class="form-select">
+                <option value="">Select a district</option>
+                <option *ngFor="let district of targetLocationDistricts" [value]="district.district_name">{{ district.district_name }}</option>
+              </select>
             </div>
           </div>
         </div>

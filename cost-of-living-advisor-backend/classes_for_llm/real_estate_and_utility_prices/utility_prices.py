@@ -243,17 +243,17 @@ class UtilitiesPrices:
         return packages
 
 
-# Example usage and testing
-if __name__ == "__main__":
-    # Configure logging
-    logging.basicConfig(level=logging.INFO)
-
-    # Initialize utilities class
-    utilities = UtilitiesPrices()
-
-    # Test with Ankara
-    city_name = "Ankara"
-
-    print(f"=== UTILITY PRICES FOR {city_name.upper()} ===")
-    utility_data = utilities.get_all_utility_prices(city_name)
-    print(json.dumps(utility_data, indent=2, ensure_ascii=False, cls=DecimalEncoder))
+# # Example usage and testing
+# if __name__ == "__main__":
+#     # Configure logging
+#     logging.basicConfig(level=logging.INFO)
+#
+#     # Initialize utilities class
+#     utilities = UtilitiesPrices()
+#
+#     # Test with Ankara
+#     city_name = "Ankara"
+#
+#     print(f"=== UTILITY PRICES FOR {city_name.upper()} ===")
+#     utility_data = utilities.get_all_utility_prices(city_name)
+#     print(json.dumps(utility_data, indent=2, ensure_ascii=False, cls=DecimalEncoder))
