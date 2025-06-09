@@ -7,17 +7,17 @@
     </button>
     <h1 class="analysis-title">Cost of Living Analysis Report</h1>
     <div class="action-buttons">
-      <button class="btn secondary" (click)="refreshAnalysis()" [disabled]="isLoading">
+      <button class="btn secondary" (click)="refreshAnalysis()" [disabled]="isAnyLoading">
         <span *ngIf="!isLoading">🔄 Refresh</span>
         <span *ngIf="isLoading">Loading...</span>
       </button>
-      <button class="btn secondary" (click)="previewPdf()" [disabled]="isLoading || !markdownContent">
+      <button class="btn secondary" (click)="previewPdf()" [disabled]="isAnyLoading || !markdownContent">
         <span *ngIf="!isLoading">👁️ Preview PDF</span>
         <span *ngIf="isLoading">Processing...</span>
       </button>
-      <button class="btn primary" (click)="downloadPdf()" [disabled]="isLoading || !markdownContent">
-        <span *ngIf="!isLoading">📥 Download PDF</span>
-        <span *ngIf="isLoading">Processing...</span>
+      <button class="btn primary" (click)="downloadPdf()" [disabled]="isAnyLoading || !markdownContent">
+        <span *ngIf="!isDownloading">📥 Download PDF</span>
+        <span *ngIf="isDownloading">Downloading...</span>
       </button>
     </div>
   </div>
@@ -28,11 +28,17 @@
     <p class="loading-text">Generating your personalized cost of living analysis...</p>
   </div>
 
+  <!-- Download Loading State -->
+  <div class="loading-container" *ngIf="isDownloading">
+    <div class="spinner"></div>
+    <p class="loading-text">Preparing your PDF download...</p>
+  </div>
+
   <!-- Error State -->
   <div class="error-container" *ngIf="error">
     <div class="error-icon">⚠️</div>
     <p class="error-message">{{ error }}</p>
-    <button class="btn secondary" (click)="refreshAnalysis()">Try Again</button>
+    <button class="btn secondary" (click)="refreshAnalysis()" [disabled]="isAnyLoading">Try Again</button>
   </div>
 
   <!-- Content Display -->
@@ -63,7 +69,10 @@
       </div>
       <div class="modal-footer">
         <button class="btn secondary" (click)="closePdfPreview()">Close</button>
-        <button class="btn primary" (click)="downloadPdf()">Download PDF</button>
+        <button class="btn primary" (click)="downloadPdf()" [disabled]="isDownloading">
+          <span *ngIf="!isDownloading">Download PDF</span>
+          <span *ngIf="isDownloading">Downloading...</span>
+        </button>
       </div>
     </div>
   </div>

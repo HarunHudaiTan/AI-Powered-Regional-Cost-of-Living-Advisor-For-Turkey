@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, create_engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -66,12 +66,20 @@ jwt = JWTManager(app)
 
 
 CORS(app,
-     origins=["http://localhost:4200", "http://127.0.0.1:4200"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-     allow_headers=["Content-Type", "Authorization"],
-     supports_credentials=True,
-     expose_headers=["Content-Type", "Authorization"])
-
+     resources={
+         r"/api/*": {
+             "origins": [
+                 "http://localhost:4200",
+                 "http://127.0.0.1:4200",
+                 "http://localhost:5000",
+                 "http://127.0.0.1:5000"
+             ],
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": True,
+             "expose_headers": ["Content-Type", "Authorization"]
+         }
+     })
 
 class User(db.Model):
     __tablename__ = 'users'  # Explicit table name
@@ -171,11 +179,28 @@ initialize_database()
 def handle_preflight():
     if request.method == "OPTIONS":
         response = jsonify({'status': 'OK'})
-        response.headers.add("Access-Control-Allow-Origin", request.headers.get('Origin', '*'))
-        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
-        response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS")
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
+        origin = request.headers.get('Origin')
+
+        # List of allowed origins
+        allowed_origins = [
+            "http://localhost:4200",
+            "http://127.0.0.1:4200",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000"
+        ]
+
+        # Only allow specific origins
+        if origin in allowed_origins:
+            response.headers.add("Access-Control-Allow-Origin", origin)
+            response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+            response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS")
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+            response.headers.add('Access-Control-Expose-Headers', 'Content-Type,Authorization')
+            return response
+        else:
+            # Reject requests from unknown origins
+            return jsonify({'error': 'Origin not allowed'}), 403
+
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
@@ -524,7 +549,7 @@ def generate_root_llm_response():
     average_electricity_price_for_four_people_household = calculate_average_price_for_electricity(electricity_price)
     average_natural_gas_price_for_four_people_household = calculate_average_price_for_natural_gas(natural_gas_price)
     average_water_price_for_four_people_household = calculate_average_price_for_water(water_price)
-
+    print(market_results)
     return root.generate_root_llm_response(user_data, real_estate_results, education_results, fuel_results, transportation_results, market_results, utility_prices, average_electricity_price_for_four_people_household, average_natural_gas_price_for_four_people_household, average_water_price_for_four_people_household)
 
 @app.route('/api/preferences', methods=['PUT'])
@@ -639,7 +664,6 @@ utilities_engine = create_engine(
 
 
 @app.route('/api/provinces', methods=['GET'])
-@cross_origin()
 def get_provinces():
     """
     Get all provinces from the utilities_turkey database
@@ -683,7 +707,6 @@ def get_provinces():
 
 
 @app.route('/api/provinces/<int:province_id>/districts', methods=['GET'])
-@cross_origin()
 def get_districts_by_province_id(province_id):
     """
     Get all districts for a specific province by province ID
@@ -751,7 +774,6 @@ def get_districts_by_province_id(province_id):
 
 
 @app.route('/api/provinces/<province_name>/districts', methods=['GET'])
-@cross_origin()
 def get_districts_by_province_name(province_name):
     """
     Get all districts for a specific province by province name
@@ -881,7 +903,6 @@ def get_all_districts():
             'message': str(e)
         }), 500
 @app.route('/api/universities', methods=['GET'])
-@cross_origin()
 def get_universities():
     """
     Get all university names from the utilities_turkey database
