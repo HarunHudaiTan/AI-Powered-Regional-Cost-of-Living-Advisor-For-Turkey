@@ -186,7 +186,6 @@ SAMPLE RESPONSE:
 
 **User's Current Market List Total:** 3.200 TL per month
 
-Based on the user-provided total for their specific market list, the analysis indicates grocery and household goods costs in Ankara are approximately 18% lower than Istanbul prices for a family of four. **Projected monthly market expenses: 2.624 TL** (savings of 576 TL monthly).
 
 ## 5. Transportation Analysis
 
@@ -219,10 +218,9 @@ Estimated Ankara fuel costs: 1.650 TL (based on 8% lower fuel prices)
 | Category | Monthly Difference |
 |----------|-------------------|
 | Housing & Utilities | -3.440 TL |
-| Market/Groceries | -576 TL |
 | Transportation | -380 TL |
 | Education | -100 TL |
-| **Total Monthly Difference** | **-4.496 TL** |
+| **Total Monthly Difference** | **-3.920 TL** |
 
 **Annual Financial Impact:** -53.952 TL in net savings
 
