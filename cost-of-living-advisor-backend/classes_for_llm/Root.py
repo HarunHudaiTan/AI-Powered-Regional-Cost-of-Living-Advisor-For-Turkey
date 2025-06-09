@@ -12,7 +12,7 @@ import json
 
 class RootLLM(LLM_Agent):
     def __init__(self):
-        super().__init__(name="ROOT LLM", role=self.system_instructions, response_mime_type="text/plain")
+        super().__init__(name="ROOT LLM", role=self.system_instructions, response_mime_type="text/plain",temperature=0.3,top_p=0.8,top_k=40)
         self.user_info = None
     system_instructions="""
 
@@ -335,7 +335,7 @@ Estimated Ankara fuel costs: 1.650 TL (based on 8% lower fuel prices)
         "Transportation prices"+f"{transportation_price_results}"
         +"Market prices"+f"{market_price_results}"
         +"Utility prices"+f"{utility_price_results}"+
-        "Average electiricty price for four people household"+f"{average_electricity_price_for_four_people_household}"
+        "Average electricity price for four people household"+f"{average_electricity_price_for_four_people_household}"
         +"Average natural gas price for four people household"+f"{average_natural_gas_price_for_four_people_household}"
         +"Average water price for four people household"+f"{average_water_price_for_four_people_household}")
 
