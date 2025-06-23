@@ -10,7 +10,7 @@ import rag
 
 class EducationAgent(LLM_Agent):
     def __init__(self):
-        super().__init__("Education Agent", self.system_instructions, response_mime_type="application/json",temperature=0.2,top_p=0.85,top_k=30)
+        super().__init__("Education Agent", self.system_instructions, response_mime_type="application/json",temperature=0.2,top_p=0.85,top_k=15)
 
     system_instructions="""
     You are an Education Price Advisor that helps prospective students understand university program costs based on their annual income. Your responses will be based EXCLUSIVELY on the information provided in the context.

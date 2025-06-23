@@ -12,7 +12,7 @@ import json
 
 class RootLLM(LLM_Agent):
     def __init__(self):
-        super().__init__(name="ROOT LLM", role=self.system_instructions, response_mime_type="text/plain",temperature=0.3,top_p=0.8,top_k=40)
+        super().__init__(name="ROOT LLM", role=self.system_instructions, response_mime_type="text/plain",temperature=0.3,top_p=0.8,top_k=20)
         self.user_info = None
     system_instructions="""
 
