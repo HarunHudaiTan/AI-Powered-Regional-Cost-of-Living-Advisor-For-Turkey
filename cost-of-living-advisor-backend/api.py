@@ -18,13 +18,18 @@ app = Flask(__name__)
 app.config[
     'SECRET_KEY'] = 'Bj7qxGUEPQvTUpee9DqFltEqlPvEIod1yK6Pr89qFxJJtFfZKNXnhuARVgYIfoCM8ax0Db4D2LIZtxxbkrM1HZkmGZh5OUC3j6HtxgVIZiud3fifcOSa/xJZ5VNePG2VA/mWELM5XTtLi5C8Yfv3ex2QN5Hu0E8k7lY9sTHo1N4='
 
-# Database configuration
-DB_HOST = 'localhost'
-DB_PORT = 3306
-DB_USER = 'root'
-DB_PASSWORD = 'rootpassword'
-DB_NAME = 'user_details_and_preferences'
-
+# # Database configuration
+# DB_HOST = 'localhost'
+# DB_PORT = 3306
+# DB_USER = 'root'
+# DB_PASSWORD = 'rootpassword'
+# DB_NAME = 'user_details_and_preferences'
+# Database configuration - use environment variables
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
+DB_PORT = int(os.environ.get('DB_PORT', 3306))
+DB_USER = os.environ.get('DB_USER', 'root')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'rootpassword')
+DB_NAME = os.environ.get('DB_NAME', 'user_details_and_preferences')
 
 # Function to create database if it doesn't exist
 def create_database_if_not_exists():
@@ -651,12 +656,17 @@ def delete_preferences():
 
 
 # Database configuration for utilities_turkey database
-UTILITIES_DB_HOST = 'localhost'
-UTILITIES_DB_PORT = 3306
-UTILITIES_DB_USER = 'root'
-UTILITIES_DB_PASSWORD = 'rootpassword'
-UTILITIES_DB_NAME = 'utilities_turkey'
-
+# UTILITIES_DB_HOST = 'localhost'
+# UTILITIES_DB_PORT = 3306
+# UTILITIES_DB_USER = 'root'
+# UTILITIES_DB_PASSWORD = 'rootpassword'
+# UTILITIES_DB_NAME = 'utilities_turkey'
+# Database configuration for utilities_turkey database
+UTILITIES_DB_HOST = os.environ.get('UTILITIES_DB_HOST', 'localhost')
+UTILITIES_DB_PORT = int(os.environ.get('UTILITIES_DB_PORT', 3306))
+UTILITIES_DB_USER = os.environ.get('UTILITIES_DB_USER', 'root')
+UTILITIES_DB_PASSWORD = os.environ.get('UTILITIES_DB_PASSWORD', 'rootpassword')
+UTILITIES_DB_NAME = os.environ.get('UTILITIES_DB_NAME', 'utilities_turkey')
 # Create a separate engine for utilities database
 utilities_engine = create_engine(
     f'mysql+mysqlconnector://{UTILITIES_DB_USER}:{UTILITIES_DB_PASSWORD}@{UTILITIES_DB_HOST}:{UTILITIES_DB_PORT}/{UTILITIES_DB_NAME}'
@@ -955,4 +965,5 @@ def get_universities():
         }), 500
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
