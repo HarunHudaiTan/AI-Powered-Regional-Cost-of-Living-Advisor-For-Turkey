@@ -715,7 +715,9 @@ def get_provinces():
             'message': str(e)
         }), 500
 
-
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "message": "App is running"}), 200
 @app.route('/api/provinces/<int:province_id>/districts', methods=['GET'])
 def get_districts_by_province_id(province_id):
     """
@@ -963,6 +965,8 @@ def get_universities():
             'error': 'An unexpected error occurred',
             'message': str(e)
         }), 500
+
+
 # Run the app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
