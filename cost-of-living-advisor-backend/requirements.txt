@@ -1,3 +1,4 @@
+cat > requirements.txt << 'EOF'
 # Flask Web Framework and Extensions
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
@@ -10,7 +11,7 @@ mysql-connector-python==8.2.0
 PyMySQL==1.1.0
 
 # Google AI/LLM Integration
-google-genai==0.2.2
+google-generativeai==0.2.2
 
 # Web Scraping and Crawling
 crawl4ai==0.3.74
@@ -37,9 +38,7 @@ IPython==8.18.1
 asyncio-mqtt==0.16.1
 
 # Utilities
-statistics==1.0.3.5
 typing-extensions==4.8.0
-decimal==1.70
 
 # Development and Testing
 pytest==7.4.3
@@ -50,4 +49,5 @@ uvloop==0.19.0
 
 # Optional: For data science capabilities
 pandas==2.1.4
-numpy==1.24.4 
+numpy==1.24.4
+EOF
