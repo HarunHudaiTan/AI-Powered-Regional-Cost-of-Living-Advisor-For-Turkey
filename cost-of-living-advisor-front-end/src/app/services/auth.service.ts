@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   username: string;
@@ -29,7 +30,7 @@ export interface UserProfile {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api';
+  private apiUrl = environment.apiUrl;
   private tokenKey = 'access_token';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
 

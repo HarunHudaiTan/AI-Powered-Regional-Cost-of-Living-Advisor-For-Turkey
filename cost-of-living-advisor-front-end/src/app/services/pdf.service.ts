@@ -5,12 +5,13 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { marked } from 'marked';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfService {
-  private apiUrl = 'http://127.0.0.1:5000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
