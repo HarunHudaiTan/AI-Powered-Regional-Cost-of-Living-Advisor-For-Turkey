@@ -192,7 +192,8 @@ def handle_preflight():
             "http://localhost:4200",
             "http://127.0.0.1:4200",
             "http://localhost:5000",
-            "http://127.0.0.1:5000"
+            "http://127.0.0.1:5000",
+            "https://cost-of-living-frontend-production.up.railway.app"
         ]
 
         # Only allow specific origins
