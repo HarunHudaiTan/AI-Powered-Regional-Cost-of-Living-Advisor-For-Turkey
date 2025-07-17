@@ -10,7 +10,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:cost-of-living-advisor-front-end": "node dist/cost-of-living-advisor-front-end/server/server.mjs",
-    "serve:production": "ng serve --configuration production --host 0.0.0.0 --port 4200"
+    "serve:production": "serve dist/your-app-name -s -p $PORT"
   },
   "private": true,
   "engines": {
