@@ -9,8 +9,9 @@
     "build:dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "build:ssr": "ng run cost-of-living-advisor-front-end:server:production",
     "serve:ssr:cost-of-living-advisor-front-end": "node dist/cost-of-living-advisor-front-end/server/server.mjs",
-    "serve:production": "serve dist -s -p $PORT"
+    "serve:production": "node dist/cost-of-living-advisor-front-end/server/server.mjs"
   },
   "private": true,
   "engines": {
