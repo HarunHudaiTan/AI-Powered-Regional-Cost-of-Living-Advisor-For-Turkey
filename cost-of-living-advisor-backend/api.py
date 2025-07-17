@@ -78,7 +78,7 @@ CORS(app,
                  "http://127.0.0.1:4200",
                  "http://localhost:5000",
                  "http://127.0.0.1:5000",
-                 "https://cost-of-living-frontend-production.up.railway.app/auth"
+                 "https://cost-of-living-frontend-production.up.railway.app"
              ],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization"],
